@@ -1,0 +1,155 @@
+{% extends "staff/layout.html" %}
+
+{% block title %}OPD Reception - Sahara Hospital{% endblock %}
+
+{% block staff_content %}
+<!-- Page Header -->
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h1 class="glass-card-title mb-1">OPD Reception</h1>
+        <p class="glass-card-subtitle">Live queue management and patient flow</p>
+    </div>
+</div>
+
+<!-- Queue Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-stat-card">
+            <div class="glass-stat-icon glass-stat-icon-warning">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <div class="glass-stat-value">{{ waiting_count }}</div>
+            <div class="glass-stat-label">Waiting</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-stat-card">
+            <div class="glass-stat-icon glass-stat-icon-info">
+                <i class="fa-solid fa-stethoscope"></i>
+            </div>
+            <div class="glass-stat-value">{{ in_progress_count }}</div>
+            <div class="glass-stat-label">In Progress</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-stat-card">
+            <div class="glass-stat-icon glass-stat-icon-success">
+                <i class="fa-solid fa-check-circle"></i>
+            </div>
+            <div class="glass-stat-value">{{ completed_count }}</div>
+            <div class="glass-stat-label">Completed</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-stat-card">
+            <div class="glass-stat-icon glass-stat-icon-primary">
+                <i class="fa-solid fa-ticket-alt"></i>
+            </div>
+            <div class="glass-stat-value">{{ waiting_count + in_progress_count }}</div>
+            <div class="glass-stat-label">Active Queue</div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Queue -->
+<div class="glass-card mb-4">
+    <div class="glass-card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="glass-card-title mb-1">Live Queue</h3>
+                <p class="glass-card-subtitle">Real-time patient queue status</p>
+            </div>
+        </div>
+    </div>
+    <div class="glass-table-container">
+        <table class="glass-table">
+            <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>Patient</th>
+                    <th>Department</th>
+                    <th>Doctor</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for visit in live_queue %}
+                <tr>
+                    <td><strong>{{ visit.token_number }}</strong></td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="glass-avatar">{{ visit.patient.full_name[0] }}</div>
+                            <span>{{ visit.patient.full_name }}</span>
+                        </div>
+                    </td>
+                    <td>{{ visit.doctor.department.department_name }}</td>
+                    <td>Dr. {{ visit.doctor.name }}</td>
+                    <td>
+                        {% if visit.status == 'waiting' %}
+                            <span class="glass-badge glass-badge-warning">Waiting</span>
+                        {% elif visit.status == 'in_progress' %}
+                            <span class="glass-badge glass-badge-info">In Progress</span>
+                        {% elif visit.status == 'completed' %}
+                            <span class="glass-badge glass-badge-success">Completed</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <form method="POST" action="{{ url_for('opd.update_status', visit_id=visit.id) }}" class="d-inline">
+                                <div class="d-flex gap-1">
+                                    <select name="status" class="glass-select glass-select-sm" style="width: auto;">
+                                        <option value="waiting" {% if visit.status == 'waiting' %}selected{% endif %}>Waiting</option>
+                                        <option value="in_progress" {% if visit.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                        <option value="completed" {% if visit.status == 'completed' %}selected{% endif %}>Completed</option>
+                                    </select>
+                                    <button type="submit" class="glass-btn glass-btn-primary glass-btn-sm">Update</button>
+                                </div>
+                            </form>
+                            <form method="POST" action="{{ url_for('opd.assign_doctor', visit_id=visit.id) }}" class="d-inline">
+                                <div class="d-flex gap-1">
+                                    <select name="doctor_id" class="glass-select glass-select-sm" style="width: auto;">
+                                        {% for doc in doctors %}
+                                        <option value="{{ doc.id }}" {% if visit.doctor_id == doc.id %}selected{% endif %}>Dr. {{ doc.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="glass-btn glass-btn-outline glass-btn-sm">Assign</button>
+                                </div>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <div class="glass-stat-icon glass-stat-icon-info" style="width: 80px; height: 80px; margin: 0 auto 1rem;">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                        </div>
+                        <h4 class="glass-card-title">No Patients in Queue</h4>
+                        <p class="glass-card-subtitle">The queue is currently empty</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Call Next Patient -->
+<div class="glass-card">
+    <div class="glass-card-header">
+        <h3 class="glass-card-title mb-1">Call Next Patient</h3>
+        <p class="glass-card-subtitle">Call next patient by department</p>
+    </div>
+    <div class="row g-3">
+        {% for dept in departments %}
+        <div class="col-md-4">
+            <a href="{{ url_for('opd.call_next', department_id=dept.id) }}" class="glass-btn glass-btn-outline w-100">
+                <i class="fa-solid fa-bullhorn me-2"></i>Call Next - {{ dept.department_name }}
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

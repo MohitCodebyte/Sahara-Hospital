@@ -1,0 +1,144 @@
+{% extends 'admin/layout.html' %}
+{% block title %}User Control - Sahara Hospital ERP{% endblock %}
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">User Control</h3>
+        <p class="text-muted mb-0">Manage system users and their roles</p>
+    </div>
+    <div class="col-auto">
+        <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill">
+            <i class="fa-solid fa-users-gear me-1"></i> User Management
+        </span>
+    </div>
+</div>
+
+<!-- Stats widgets -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Patients</span>
+                <h2 class="mb-0 fw-bold">{{ patient_count }}</h2>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(16, 185, 129, 0.15); color: #059669;">
+                <i class="fa-solid fa-hospital-user fs-4"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Doctors</span>
+                <h2 class="mb-0 fw-bold">{{ doctor_count }}</h2>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(79, 70, 229, 0.15); color: #4f46e5;">
+                <i class="fa-solid fa-user-doctor fs-4"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Staff</span>
+                <h2 class="mb-0 fw-bold">{{ staff_count }}</h2>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(6, 182, 212, 0.15); color: #0891b2;">
+                <i class="fa-solid fa-user-nurse fs-4"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Admins</span>
+                <h2 class="mb-0 fw-bold">{{ admin_count }}</h2>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(245, 158, 11, 0.15); color: #d97706;">
+                <i class="fa-solid fa-user-shield fs-4"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="glass-card mb-4">
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('admin.users', role='all') }}" class="btn {% if selected_role == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill">All Users</a>
+        <a href="{{ url_for('admin.users', role='patient') }}" class="btn {% if selected_role == 'patient' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill">Patients</a>
+        <a href="{{ url_for('admin.users', role='doctor') }}" class="btn {% if selected_role == 'doctor' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill">Doctors</a>
+        <a href="{{ url_for('admin.users', role='staff') }}" class="btn {% if selected_role == 'staff' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill">Staff</a>
+        <a href="{{ url_for('admin.users', role='admin') }}" class="btn {% if selected_role == 'admin' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill">Admins</a>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="glass-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0">User List</h5>
+        <span class="text-muted text-sm">Showing {% if users %}{{ users|length }}{% elif admins %}{{ admins|length }}{% else %}0{% endif %} users</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if users %}
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td class="fw-bold">{{ user.full_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.role == 'doctor' %}
+                                <span class="badge bg-primary">Doctor</span>
+                            {% elif user.role == 'staff' %}
+                                <span class="badge bg-success">Staff</span>
+                            {% elif user.role == 'superadmin' %}
+                                <span class="badge bg-dark">Super Admin</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Patient</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('auth.change_role', user_id=user.id, role='doctor') }}" class="btn btn-sm btn-primary">Make Doctor</a>
+                                <a href="{{ url_for('auth.change_role', user_id=user.id, role='staff') }}" class="btn btn-sm btn-success">Make Staff</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% elif admins %}
+                    {% for admin in admins %}
+                    <tr>
+                        <td>{{ admin.id }}</td>
+                        <td class="fw-bold">{{ admin.username }}</td>
+                        <td>{{ admin.email }}</td>
+                        <td>
+                            <span class="badge bg-dark">Admin</span>
+                        </td>
+                        <td>
+                            <span class="text-muted text-sm">System Administrator</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No users found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

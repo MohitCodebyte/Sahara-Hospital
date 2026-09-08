@@ -1,0 +1,438 @@
+{% extends 'admin/layout.html' %}
+{% block title %}Medical File Tracking - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Medical File Tracking</h3>
+        <p class="text-muted mb-0">Track patient medical records movement and status</p>
+    </div>
+    <div class="col-auto">
+        <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill">
+            <i class="fa-solid fa-folder-open me-1"></i> MRD Module
+        </span>
+    </div>
+</div>
+
+<!-- Status Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Total Files</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ files|length if files else 0 }}">0</h2>
+                <span class="text-xs text-indigo-600 font-semibold">All Records</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(79, 70, 229, 0.15); color: #4f46e5;">
+                <i class="fa-solid fa-folder fs-4"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="animation-delay: 0.1s; background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Available</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ files|selectattr('status','equalto','available')|list|length if files else 0 }}">0</h2>
+                <span class="text-xs text-emerald-600 font-semibold">In MRD</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(16, 185, 129, 0.15); color: #059669;">
+                <i class="fa-solid fa-check-circle fs-4"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="animation-delay: 0.2s; background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Issued</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ files|selectattr('status','equalto','checked_out')|list|length if files else 0 }}">0</h2>
+                <span class="text-xs text-amber-600 font-semibold">With Staff</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(245, 158, 11, 0.15); color: #d97706;">
+                <i class="fa-solid fa-hand-holding fs-4"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="animation-delay: 0.3s; background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Returned</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ files|selectattr('status','equalto','returned')|list|length if files else 0 }}">0</h2>
+                <span class="text-xs text-cyan-600 font-semibold">Back to MRD</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(6, 182, 212, 0.15); color: #0891b2;">
+                <i class="fa-solid fa-rotate-left fs-4"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="animation-delay: 0.4s; background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Missing</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ files|selectattr('status','equalto','missing')|list|length if files else 0 }}">0</h2>
+                <span class="text-xs text-red-600 font-semibold">Lost Files</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(239, 68, 68, 0.15); color: #dc2626;">
+                <i class="fa-solid fa-triangle-exclamation fs-4"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="animation-delay: 0.5s; background: linear-gradient(135deg, rgba(107, 114, 128, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Archived</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ files|selectattr('status','equalto','archived')|list|length if files else 0 }}">0</h2>
+                <span class="text-xs text-gray-600 font-semibold">Storage</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(107, 114, 128, 0.15); color: #4b5563;">
+                <i class="fa-solid fa-archive fs-4"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="glass-card mb-4 animate-on-scroll fade-in-up" style="animation-delay: 0.6s;">
+    <h5 class="fw-bold mb-4">Quick Actions</h5>
+    <div class="row g-3">
+        <div class="col-md-2-4">
+            <a href="{{ url_for('mrd.add_file_tracking') }}" class="btn btn-light border d-flex align-items-center justify-content-between p-3 rounded-4 transition-all hover-translate-x w-100">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-3 p-2 bg-primary-subtle text-primary me-3">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                    <div class="text-start">
+                        <span class="d-block font-semibold text-sm">Register File</span>
+                        <span class="text-xs text-muted">New MRD file</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-angle-right text-muted"></i>
+            </a>
+        </div>
+        <div class="col-md-2-4">
+            <a href="#" class="btn btn-light border d-flex align-items-center justify-content-between p-3 rounded-4 transition-all hover-translate-x w-100">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-3 p-2 bg-warning-subtle text-warning me-3">
+                        <i class="fa-solid fa-hand-holding"></i>
+                    </div>
+                    <div class="text-start">
+                        <span class="d-block font-semibold text-sm">Issue File</span>
+                        <span class="text-xs text-muted">To department</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-angle-right text-muted"></i>
+            </a>
+        </div>
+        <div class="col-md-2-4">
+            <a href="#" class="btn btn-light border d-flex align-items-center justify-content-between p-3 rounded-4 transition-all hover-translate-x w-100">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-3 p-2 bg-success-subtle text-success me-3">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </div>
+                    <div class="text-start">
+                        <span class="d-block font-semibold text-sm">Return File</span>
+                        <span class="text-xs text-muted">To MRD</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-angle-right text-muted"></i>
+            </a>
+        </div>
+        <div class="col-md-2-4">
+            <a href="#" class="btn btn-light border d-flex align-items-center justify-content-between p-3 rounded-4 transition-all hover-translate-x w-100">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-3 p-2 bg-info-subtle text-info me-3">
+                        <i class="fa-solid fa-exchange-alt"></i>
+                    </div>
+                    <div class="text-start">
+                        <span class="d-block font-semibold text-sm">Transfer File</span>
+                        <span class="text-xs text-muted">Move file</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-angle-right text-muted"></i>
+            </a>
+        </div>
+        <div class="col-md-2-4">
+            <a href="#" class="btn btn-light border d-flex align-items-center justify-content-between p-3 rounded-4 transition-all hover-translate-x w-100">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-3 p-2 bg-secondary-subtle text-secondary me-3">
+                        <i class="fa-solid fa-archive"></i>
+                    </div>
+                    <div class="text-start">
+                        <span class="d-block font-semibold text-sm">Archive File</span>
+                        <span class="text-xs text-muted">Long-term storage</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-angle-right text-muted"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="glass-card mb-4 animate-on-scroll fade-in-up" style="animation-delay: 0.7s;">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h5 class="fw-bold mb-0">Search & Filters</h5>
+    </div>
+    <form method="GET" class="row g-3" action="{{ url_for('mrd.file_tracking') }}">
+        <div class="col-md-2">
+            <input type="text" name="patient_id" class="form-control form-control-sm" placeholder="Patient ID" value="{{ request.args.get('patient_id','') }}" />
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="file_number" class="form-control form-control-sm" placeholder="File Number" value="{{ request.args.get('file_number','') }}" />
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="location" class="form-control form-control-sm" placeholder="Location" value="{{ request.args.get('location','') }}" />
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select form-select-sm">
+                <option value="">All Statuses</option>
+                <option value="available" {% if request.args.get('status') == 'available' %}selected{% endif %}>Available</option>
+                <option value="checked_out" {% if request.args.get('status') == 'checked_out' %}selected{% endif %}>Issued</option>
+                <option value="returned" {% if request.args.get('status') == 'returned' %}selected{% endif %}>Returned</option>
+                <option value="missing" {% if request.args.get('status') == 'missing' %}selected{% endif %}>Missing</option>
+                <option value="archived" {% if request.args.get('status') == 'archived' %}selected{% endif %}>Archived</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary btn-sm w-100">
+                <i class="fa-solid fa-search me-1"></i> Search
+            </button>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ url_for('mrd.file_tracking') }}" class="btn btn-outline-secondary btn-sm w-100">
+                <i class="fa-solid fa-rotate-left me-1"></i> Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- File Tracking Table -->
+<div class="glass-card mb-4 animate-on-scroll fade-in-up" style="animation-delay: 0.8s;">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h5 class="fw-bold mb-0">Medical Files</h5>
+        <span class="badge bg-primary">{{ files|length if files else 0 }} Files</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>File No</th>
+                    <th>Patient Name</th>
+                    <th>Current Location</th>
+                    <th>Current Holder</th>
+                    <th>Status</th>
+                    <th>Last Movement</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if files %}
+                    {% for f in files %}
+                    <tr>
+                        <td class="fw-bold">{{ f.file_number }}</td>
+                        <td>{{ f.patient.full_name if f.patient else 'N/A' }}</td>
+                        <td>{{ f.current_location }}</td>
+                        <td>{{ f.issued_to_staff or '—' }}</td>
+                        <td>
+                            {% if f.status == 'available' %}
+                                <span class="badge bg-success">Available</span>
+                            {% elif f.status == 'checked_out' %}
+                                <span class="badge bg-warning">Issued</span>
+                            {% elif f.status == 'returned' %}
+                                <span class="badge bg-info">Returned</span>
+                            {% elif f.status == 'missing' %}
+                                <span class="badge bg-danger">Missing</span>
+                            {% elif f.status == 'archived' %}
+                                <span class="badge bg-secondary">Archived</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">{{ f.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ f.issue_date.strftime('%Y-%m-%d') if f.issue_date else '—' }}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-info" title="View Timeline">
+                                    <i class="fa-solid fa-timeline"></i>
+                                </button>
+                                {% if f.status == 'checked_out' %}
+                                <button class="btn btn-sm btn-outline-success" title="Return File">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <div class="text-center">
+                                <i class="fa-solid fa-folder-open fs-1 text-muted mb-3"></i>
+                                <p>No medical files found. Register your first file to get started.</p>
+                                <a href="{{ url_for('mrd.add_file_tracking') }}" class="btn btn-primary btn-sm">
+                                    <i class="fa-solid fa-plus me-1"></i> Register File
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Activity Timeline Section -->
+<div class="glass-card animate-on-scroll fade-in-up" style="animation-delay: 0.9s;">
+    <h5 class="fw-bold mb-4">Recent File Movements</h5>
+    <div class="timeline">
+        {% if files %}
+            {% for f in files[:5] %}
+            <div class="timeline-item">
+                <div class="timeline-marker">
+                    <i class="fa-solid fa-circle"></i>
+                </div>
+                <div class="timeline-content">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="fw-bold mb-1">File #{{ f.file_number }}</h6>
+                            <p class="text-muted text-sm mb-2">{{ f.patient.full_name if f.patient else 'Unknown Patient' }}</p>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge {% if f.status == 'available' %}bg-success{% elif f.status == 'checked_out' %}bg-warning{% elif f.status == 'returned' %}bg-info{% elif f.status == 'missing' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                    {{ f.status|title }}
+                                </span>
+                                <span class="text-muted text-xs">
+                                    <i class="fa-solid fa-location-dot me-1"></i>{{ f.current_location }}
+                                </span>
+                            </div>
+                        </div>
+                        <span class="text-muted text-xs">{{ f.issue_date.strftime('%Y-%m-%d %H:%M') if f.issue_date else '—' }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="fa-solid fa-clock-rotate-left fs-1 text-muted mb-3"></i>
+                <p>No recent file movements</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .col-lg-2-4 {
+        flex: 0 0 auto;
+        width: 20%;
+    }
+    .hover-translate-x:hover {
+        transform: translateX(4px);
+    }
+    .counter {
+        font-variant-numeric: tabular-nums;
+    }
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .fade-in-up {
+        animation: fade-in-up 0.5s ease-out forwards;
+    }
+    .animate-on-scroll {
+        opacity: 0;
+    }
+    .animate-on-scroll.animated {
+        opacity: 1;
+    }
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: rgba(79, 70, 229, 0.2);
+    }
+    .timeline-item {
+        position: relative;
+        padding-bottom: 20px;
+    }
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+    .timeline-marker {
+        position: absolute;
+        left: -30px;
+        top: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #4f46e5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .timeline-marker i {
+        font-size: 8px;
+        color: white;
+    }
+    .timeline-content {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Counter animation
+    const counters = document.querySelectorAll('.counter');
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const duration = 1000;
+        const step = target / (duration / 16);
+        let current = 0;
+        
+        const updateCounter = () => {
+            current += step;
+            if (current < target) {
+                counter.textContent = Math.ceil(current);
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.textContent = target;
+            }
+        };
+        updateCounter();
+    });
+
+    // Scroll animations
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    animatedElements.forEach(el => observer.observe(el));
+});
+</script>
+{% endblock %}

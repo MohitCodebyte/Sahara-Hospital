@@ -1,0 +1,81 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Medicines Catalog - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Medicine Catalog</h3>
+        <p class="text-muted mb-0">Master catalog list for pharmacy medicines and active stock levels.</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('pharmacy.add_medicine') }}" class="btn btn-primary px-3 rounded-pill">
+            <i class="fa-solid fa-plus me-1"></i> Add New Medicine
+        </a>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Medicine Name</th>
+                    <th>Category</th>
+                    <th>Dosage Form</th>
+                    <th>Manufacturer</th>
+                    <th>Min. Stock Level</th>
+                    <th>Unit</th>
+                    <th>Total Stock</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for med in medicines %}
+                <tr>
+                    <td>#{{ med.id }}</td>
+                    <td class="fw-bold">{{ med.medicine_name }}</td>
+                    <td><span class="badge bg-indigo-subtle text-indigo border border-indigo-subtle px-3 py-1 rounded-pill">{{ med.category }}</span></td>
+                    <td>{{ med.dosage_form }}</td>
+                    <td>{{ med.manufacturer }}</td>
+                    <td>{{ med.min_stock }}</td>
+                    <td>{{ med.unit }}</td>
+                    <td>
+                        {% if med.total_stock <= med.min_stock %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill fw-bold">
+                                {{ med.total_stock }} (Low Stock)
+                            </span>
+                        {% else %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill fw-bold">
+                                {{ med.total_stock }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-group gap-2">
+                            <a href="{{ url_for('pharmacy.edit_medicine', id=med.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                <i class="fa-regular fa-pen-to-square"></i> Edit
+                            </a>
+                            <a href="{{ url_for('pharmacy.delete_medicine', id=med.id) }}" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Are you sure you want to delete this medicine from the master list?');">
+                                <i class="fa-regular fa-trash-can"></i> Delete
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">No medicines found in master catalog.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .text-indigo { color: #4f46e5; }
+    .bg-indigo-subtle { background-color: rgba(79, 70, 229, 0.08); }
+    .border-indigo-subtle { border-color: rgba(79, 70, 229, 0.2) !important; }
+</style>
+{% endblock %}

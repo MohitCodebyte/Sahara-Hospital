@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Details{% endblock %}
+
+{% block content %}
+
+<style>
+
+.appointment-wrapper{
+    padding:40px 0;
+    background:#f4f7fb;
+    min-height:100vh;
+}
+
+.appointment-card{
+    background:#fff;
+    border-radius:20px;
+    padding:35px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+}
+
+.header-gradient{
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:white;
+    border-radius:20px;
+    padding:30px;
+    margin-bottom:30px;
+}
+
+.header-gradient h2{
+    margin:0;
+    font-weight:700;
+}
+
+.header-gradient p{
+    margin-top:8px;
+    opacity:.9;
+}
+
+.patient-avatar{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    background:white;
+    color:#2563eb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:35px;
+    margin-bottom:15px;
+}
+
+.info-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.info-table tr{
+    border-bottom:1px solid #e5e7eb;
+}
+
+.info-table th{
+    width:250px;
+    background:#f8fafc;
+    padding:16px;
+    font-weight:600;
+}
+
+.info-table td{
+    padding:16px;
+}
+
+.status-badge{
+    display:inline-block;
+    padding:8px 18px;
+    border-radius:30px;
+    font-size:14px;
+    font-weight:600;
+}
+
+.pending{
+    background:#fff7ed;
+    color:#ea580c;
+}
+
+.confirmed{
+    background:#ecfdf5;
+    color:#059669;
+}
+
+.completed{
+    background:#eff6ff;
+    color:#2563eb;
+}
+
+.cancelled{
+    background:#fef2f2;
+    color:#dc2626;
+}
+
+.scheduled{
+    background:#ede9fe;
+    color:#7c3aed;
+}
+
+.action-section{
+    margin-top:30px;
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.action-btn{
+    padding:12px 22px;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:600;
+}
+
+.btn-back{
+    background:#2563eb;
+    color:white;
+}
+
+.btn-approve{
+    background:#16a34a;
+    color:white;
+}
+
+.btn-reject{
+    background:#dc2626;
+    color:white;
+}
+
+.btn-schedule{
+    background:#7c3aed;
+    color:white;
+}
+
+.action-btn:hover{
+    opacity:.9;
+    color:white;
+}
+
+</style>
+
+<div class="appointment-wrapper">
+
+    <div class="container">
+
+        <div class="appointment-card">
+
+            <div class="header-gradient">
+
+                <div class="patient-avatar">
+                    {{ appointment.patient.full_name[0]|upper }}
+                </div>
+
+                <h2>
+                    Appointment Details
+                </h2>
+
+                <p>
+                    Complete patient consultation information
+                </p>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="info-table">
+
+                    <tr>
+                        <th>Appointment ID</th>
+                        <td>#{{ appointment.id }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Patient Name</th>
+                        <td>{{ appointment.patient.full_name }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ appointment.patient.email }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Phone Number</th>
+                        <td>{{ appointment.patient.phone }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Gender</th>
+                        <td>{{ appointment.patient.gender }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Age</th>
+                        <td>{{ appointment.patient.age }} Years</td>
+                    </tr>
+
+                    <tr>
+                        <th>Doctor</th>
+                        <td>
+                            Dr. {{ appointment.doctor.name }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Appointment Date</th>
+                        <td>{{ appointment.appointment_date }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Appointment Time</th>
+                        <td>{{ appointment.appointment_time }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Symptoms</th>
+                        <td>
+                            {{ appointment.symptoms or 'No symptoms provided' }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Status</th>
+
+                        <td>
+
+                            {% if appointment.status == 'pending' %}
+
+                                <span class="status-badge pending">
+                                    Pending
+                                </span>
+
+                            {% elif appointment.status == 'confirmed' %}
+
+                                <span class="status-badge confirmed">
+                                    Confirmed
+                                </span>
+
+                            {% elif appointment.status == 'scheduled' %}
+
+                                <span class="status-badge scheduled">
+                                    Scheduled
+                                </span>
+
+                            {% elif appointment.status == 'completed' %}
+
+                                <span class="status-badge completed">
+                                    Completed
+                                </span>
+
+                            {% elif appointment.status == 'cancelled' %}
+
+                                <span class="status-badge cancelled">
+                                    Cancelled
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <th>Appointment Type</th>
+
+                        <td>
+
+                            {% if appointment.status == 'scheduled' %}
+
+                                <span class="status-badge scheduled">
+                                    Scheduled Appointment
+                                </span>
+
+                            {% elif appointment.status == 'confirmed' %}
+
+                                <span class="status-badge confirmed">
+                                    Confirmed Appointment
+                                </span>
+
+                            {% elif appointment.status == 'pending' %}
+
+                                <span class="status-badge pending">
+                                    Waiting Approval
+                                </span>
+
+                            {% else %}
+
+                                -
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                </table>
+
+            </div>
+
+            <div class="action-section">
+
+                <a href="{{ url_for('doctors.doctor_dashboard') }}"
+                   class="action-btn btn-back">
+
+                    ← Back To Dashboard
+
+                </a>
+
+                {% if appointment.status == 'pending' %}
+
+                <a href="{{ url_for('doctors.approve_appointment',
+                    appointment_id=appointment.id) }}"
+                class="action-btn btn-approve">
+
+                    ✓ Approve Appointment
+
+                </a>
+
+                <a href="{{ url_for('doctors.schedule_appointment',
+                                     appointment_id=appointment.id) }}"
+                   class="action-btn btn-schedule">
+
+                    📅 Schedule Appointment
+
+                </a>
+
+                <a href="{{ url_for('opd.reject_appointment',
+                                     appointment_id=appointment.id) }}"
+                   class="action-btn btn-reject">
+
+                    ✕ Reject Appointment
+
+                </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

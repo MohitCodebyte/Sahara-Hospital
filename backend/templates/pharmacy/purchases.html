@@ -1,0 +1,69 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Supplier Purchases - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Supplier Purchase Invoices</h3>
+        <p class="text-muted mb-0">History of medicine procurement invoices, supplier details, and billing audit logs.</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('pharmacy.new_purchase') }}" class="btn btn-primary px-3 rounded-pill">
+            <i class="fa-solid fa-cart-plus me-1"></i> Record New Purchase
+        </a>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>Purchase Date</th>
+                    <th>Invoice No.</th>
+                    <th>Supplier</th>
+                    <th>Procured Medicines</th>
+                    <th>Subtotal</th>
+                    <th>CGST (9%)</th>
+                    <th>SGST (9%)</th>
+                    <th>Discount</th>
+                    <th>Total Paid</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for purchase in purchases %}
+                <tr>
+                    <td><i class="fa-regular fa-calendar me-1 text-muted"></i> {{ purchase.purchase_date.strftime('%Y-%m-%d') }}</td>
+                    <td><span class="badge bg-secondary font-monospace">{{ purchase.invoice_number }}</span></td>
+                    <td class="fw-semibold text-indigo">{{ purchase.supplier.name }}</td>
+                    <td>
+                        <ul class="list-unstyled mb-0 text-sm">
+                            {% for batch in purchase.batches %}
+                            <li>
+                                <i class="fa-solid fa-circle-chevron-right text-muted me-1"></i>
+                                {{ batch.medicine.medicine_name }} - Batch {{ batch.batch_number }} (Qty: {{ batch.initial_qty }})
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>₹{{ "%.2f"|format(purchase.subtotal) }}</td>
+                    <td>₹{{ "%.2f"|format(purchase.cgst) }}</td>
+                    <td>₹{{ "%.2f"|format(purchase.sgst) }}</td>
+                    <td class="text-danger">-₹{{ "%.2f"|format(purchase.discount) }}</td>
+                    <td class="fw-bold text-dark">₹{{ "%.2f"|format(purchase.total_amount) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">No purchase invoices recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .text-indigo { color: #4f46e5; }
+</style>
+{% endblock %}

@@ -1,0 +1,384 @@
+{% extends 'admin/layout.html' %}
+{% block title %}Request Stock - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Request Stock</h3>
+        <p class="text-muted mb-0">Department stock requests and approvals</p>
+    </div>
+    <div class="col-auto">
+        <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill">
+            <i class="fa-solid fa-boxes-stacked me-1"></i> Inventory Module
+        </span>
+    </div>
+</div>
+
+<!-- Dashboard Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Total Items</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ stats.total_items_count if stats else 0 }}">0</h2>
+                <span class="text-xs text-indigo-600 font-semibold">In Inventory</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(79, 70, 229, 0.15); color: #4f46e5;">
+                <i class="fa-solid fa-boxes-stacked fs-4"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="animation-delay: 0.1s; background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Pending Requests</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ stats.pending if stats else 0 }}">0</h2>
+                <span class="text-xs text-amber-600 font-semibold">Awaiting Action</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(245, 158, 11, 0.15); color: #d97706;">
+                <i class="fa-solid fa-clock fs-4"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="animation-delay: 0.2s; background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Approved</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ stats.approved if stats else 0 }}">0</h2>
+                <span class="text-xs text-emerald-600 font-semibold">Requests Approved</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(16, 185, 129, 0.15); color: #059669;">
+                <i class="fa-solid fa-check-circle fs-4"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="animation-delay: 0.3s; background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Rejected</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ stats.rejected if stats else 0 }}">0</h2>
+                <span class="text-xs text-red-600 font-semibold">Requests Rejected</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(239, 68, 68, 0.15); color: #dc2626;">
+                <i class="fa-solid fa-times-circle fs-4"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="animation-delay: 0.4s; background: linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Low Stock Items</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ stats.low_stock if stats else 0 }}">0</h2>
+                <span class="text-xs text-pink-600 font-semibold">Needs Reorder</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(236, 72, 153, 0.15); color: #db2777;">
+                <i class="fa-solid fa-triangle-exclamation fs-4"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-2-4 col-md-6">
+        <div class="glass-card d-flex align-items-center justify-content-between animate-on-scroll fade-in-up" style="animation-delay: 0.5s; background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(255, 255, 255, 0.45));">
+            <div>
+                <span class="d-block text-muted text-xs font-semibold mb-1">Departments</span>
+                <h2 class="mb-0 fw-bold counter" data-target="{{ stats.departments if stats else 0 }}">0</h2>
+                <span class="text-xs text-cyan-600 font-semibold">Active Depts</span>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: rgba(6, 182, 212, 0.15); color: #0891b2;">
+                <i class="fa-solid fa-building-user fs-4"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Form -->
+<div class="glass-card mb-4 animate-on-scroll fade-in-up" style="animation-delay: 0.6s;">
+    <h5 class="fw-bold mb-4">New Stock Request</h5>
+    <form method="post" class="row g-3">
+        <div class="col-md-3">
+            <label class="form-label fw-semibold text-sm">Department</label>
+            <select name="department_id" class="form-select" required>
+                <option value="" disabled selected>Select Department</option>
+                {% for dept in departments %}
+                <option value="{{ dept.id }}">{{ dept.department_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold text-sm">Item</label>
+            <select name="item_id" id="item-select" class="form-select" required>
+                <option value="" disabled selected>Select Item</option>
+                {% for item in items %}
+                <option value="{{ item.id }}" data-qty="{{ item.quantity }}" data-min="{{ item.min_stock|default(10) }}">{{ item.item_name }} ({{ item.quantity }} in stock)</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold text-sm">Current Stock</label>
+            <div class="form-control bg-light" id="current-stock-display">0</div>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold text-sm">Min Required</label>
+            <div class="form-control bg-light" id="min-stock-display">10</div>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold text-sm">Requested Qty</label>
+            <input type="number" name="quantity" class="form-control" min="1" required placeholder="Enter quantity">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold text-sm">Priority</label>
+            <select name="priority" class="form-select" required>
+                <option value="Normal" selected>Normal</option>
+                <option value="Urgent">Urgent</option>
+                <option value="Critical">Critical</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold text-sm">Expected Date</label>
+            <input type="date" name="expected_date" class="form-control">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-semibold text-sm">Reason/Notes</label>
+            <input type="text" name="notes" class="form-control" placeholder="Optional: Specify reason for request">
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fa-solid fa-paper-plane me-2"></i> Submit Request
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Stock Warning Indicator -->
+<div id="stock-warning" class="alert alert-warning d-none animate-on-scroll fade-in-up" style="animation-delay: 0.7s;">
+    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+    <strong>Low Stock Warning:</strong> Current stock is below minimum required level.
+</div>
+
+<!-- Filters -->
+<div class="glass-card mb-4 animate-on-scroll fade-in-up" style="animation-delay: 0.8s;">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h5 class="fw-bold mb-0">Filter Requests</h5>
+    </div>
+    <form method="get" class="row g-3">
+        <div class="col-md-2">
+            <input type="text" name="search_item" class="form-control form-control-sm" placeholder="Search Item" value="{{ request.args.get('search_item','') }}">
+        </div>
+        <div class="col-md-2">
+            <select name="department_id" class="form-select form-select-sm">
+                <option value="" {% if not request.args.get('department_id') %}selected{% endif %}>All Departments</option>
+                {% for dept in departments %}
+                <option value="{{ dept.id }}" {% if request.args.get('department_id') == dept.id|string %}selected{% endif %}>{{ dept.department_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select form-select-sm">
+                <option value="" {% if not request.args.get('status') %}selected{% endif %}>All Statuses</option>
+                <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="approved" {% if request.args.get('status') == 'approved' %}selected{% endif %}>Approved</option>
+                <option value="rejected" {% if request.args.get('status') == 'rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="priority" class="form-select form-select-sm">
+                <option value="" {% if not request.args.get('priority') %}selected{% endif %}>All Priorities</option>
+                <option value="Normal" {% if request.args.get('priority') == 'Normal' %}selected{% endif %}>Normal</option>
+                <option value="Urgent" {% if request.args.get('priority') == 'Urgent' %}selected{% endif %}>Urgent</option>
+                <option value="Critical" {% if request.args.get('priority') == 'Critical' %}selected{% endif %}>Critical</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary btn-sm w-100">
+                <i class="fa-solid fa-filter me-1"></i> Filter
+            </button>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ url_for('inventory.request_stock') }}" class="btn btn-outline-secondary btn-sm w-100">
+                <i class="fa-solid fa-rotate-left me-1"></i> Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Pending Requests Table -->
+<div class="glass-card animate-on-scroll fade-in-up" style="animation-delay: 0.9s;">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h5 class="fw-bold mb-0">Stock Requests</h5>
+        <span class="badge bg-primary">{{ requests|length if requests else 0 }} Requests</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Department</th>
+                    <th>Item</th>
+                    <th>Available</th>
+                    <th>Requested</th>
+                    <th>Priority</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if requests %}
+                    {% for req in requests %}
+                    <tr>
+                        <td class="fw-bold">{{ loop.index }}</td>
+                        <td>{{ req.department.department_name if req.department else '-' }}</td>
+                        <td class="fw-bold">{{ req.item.item_name if req.item else '-' }}</td>
+                        <td>
+                            <span class="badge {% if req.item and req.item.quantity <= 10 %}bg-danger{% else %}bg-success{% endif %}">
+                                {{ req.item.quantity if req.item else 0 }}
+                            </span>
+                        </td>
+                        <td class="fw-bold">{{ req.quantity }}</td>
+                        <td>
+                            {% if req.priority == 'Critical' %}
+                                <span class="badge bg-danger">Critical</span>
+                            {% elif req.priority == 'Urgent' %}
+                                <span class="badge bg-warning">Urgent</span>
+                            {% else %}
+                                <span class="badge bg-info">Normal</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ req.request_date.strftime('%Y-%m-%d') if req.request_date else '-' }}</td>
+                        <td>
+                            {% if req.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif req.status == 'approved' %}
+                                <span class="badge bg-success">Approved</span>
+                            {% else %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                {% if req.status == 'pending' %}
+                                <button class="btn btn-sm btn-outline-success" title="Approve">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" title="Reject">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            <div class="text-center">
+                                <i class="fa-solid fa-inbox fs-1 text-muted mb-3"></i>
+                                <p>No stock requests found. Submit your first request to get started.</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .col-lg-2-4 {
+        flex: 0 0 auto;
+        width: 20%;
+    }
+    .counter {
+        font-variant-numeric: tabular-nums;
+    }
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .fade-in-up {
+        animation: fade-in-up 0.5s ease-out forwards;
+    }
+    .animate-on-scroll {
+        opacity: 0;
+    }
+    .animate-on-scroll.animated {
+        opacity: 1;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Counter animation
+    const counters = document.querySelectorAll('.counter');
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const duration = 1000;
+        const step = target / (duration / 16);
+        let current = 0;
+        
+        const updateCounter = () => {
+            current += step;
+            if (current < target) {
+                counter.textContent = Math.ceil(current);
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.textContent = target;
+            }
+        };
+        updateCounter();
+    });
+
+    // Scroll animations
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    animatedElements.forEach(el => observer.observe(el));
+
+    // Update stock display when item changes
+    const itemSelect = document.getElementById('item-select');
+    const stockDisplay = document.getElementById('current-stock-display');
+    const minStockDisplay = document.getElementById('min-stock-display');
+    const stockWarning = document.getElementById('stock-warning');
+
+    function updateStockDisplay() {
+        const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+        const currentStock = parseInt(selectedOption.getAttribute('data-qty')) || 0;
+        const minStock = parseInt(selectedOption.getAttribute('data-min')) || 10;
+        
+        stockDisplay.textContent = currentStock;
+        minStockDisplay.textContent = minStock;
+        
+        // Show warning if stock is low
+        if (currentStock <= minStock) {
+            stockWarning.classList.remove('d-none');
+        } else {
+            stockWarning.classList.add('d-none');
+        }
+    }
+
+    if (itemSelect) {
+        itemSelect.addEventListener('change', updateStockDisplay);
+        updateStockDisplay();
+    }
+});
+</script>
+{% endblock %}

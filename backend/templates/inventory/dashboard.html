@@ -1,0 +1,226 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Inventory Dashboard{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">Live Inventory</h2>
+            <p class="text-muted mb-0">Monitor stock, inventory health and hospital supplies</p>
+        </div>
+        <a href="{{ url_for('inventory.add_item') }}" class="glass-btn glass-btn-primary">
+            <i class="fa-solid fa-plus me-2"></i>Add Item
+        </a>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-primary mb-3">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Total Items</span>
+                <p class="glass-stat-value" data-counter="{{ total_items }}" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +8% this month</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-warning mb-3">
+                    <i class="fa-solid fa-exclamation-triangle"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Low Stock Items</span>
+                <p class="glass-stat-value" data-counter="{{ low_stock_count }}" data-duration="1500">0</p>
+                <p class="glass-stat-change negative"><i class="fa-solid fa-arrow-down"></i> -5% from last week</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-danger mb-3">
+                    <i class="fa-solid fa-calendar-times"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Expiring Soon</span>
+                <p class="glass-stat-value" data-counter="5" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +2 new this week</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-success mb-3">
+                    <i class="fa-solid fa-truck"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Total Suppliers</span>
+                <p class="glass-stat-value" data-counter="12" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +3 new this month</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Stock Category Distribution</h5>
+                    <p class="glass-card-subtitle">Inventory by category</p>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="categoryDistChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card h-100">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Inventory Value</h5>
+                    <p class="glass-card-subtitle">Total stock value</p>
+                </div>
+                <div class="p-3 text-center">
+                    <div class="display-4 text-primary fw-bold mb-2">₹{{ "{:,.2f}".format(total_value) if total_value else '0.00' }}</div>
+                    <div class="text-muted">Total Inventory Value</div>
+                    <div class="mt-3">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
+                            <i class="fa-solid fa-arrow-up me-1"></i> +12% from last month
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="glass-card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="glass-card-title mb-0">Recent Inventory Items</h5>
+                    <p class="glass-card-subtitle mb-0">Latest stock entries</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <input type="text" class="form-control" placeholder="Search items..." id="searchInput" style="width: 250px;">
+                    <select class="form-select" id="categoryFilter" style="width: 200px;">
+                        <option value="">All Categories</option>
+                        <option value="Medicines">Medicines</option>
+                        <option value="Equipment">Equipment</option>
+                        <option value="Consumables">Consumables</option>
+                        <option value="Lab Supplies">Lab Supplies</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="glass-table-container">
+            <table class="glass-table" id="inventoryTable">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total Value</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr class="inventory-row" data-category="{{ item.category }}">
+                        <td><strong>{{ item.item_code }}</strong></td>
+                        <td>{{ item.item_name }}</td>
+                        <td>{{ item.category }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>₹{{ "{:.2f}".format(item.unit_price) if item.unit_price else '0.00' }}</td>
+                        <td>₹{{ "{:.2f}".format(item.quantity * (item.unit_price or 0)) }}</td>
+                        <td>
+                            {% if item.low_stock %}
+                                <span class="glass-badge glass-badge-danger">Low Stock</span>
+                            {% else %}
+                                <span class="glass-badge glass-badge-success">Available</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{{ url_for('inventory.edit_item', item_id=item.id) }}" class="glass-btn glass-btn-sm glass-btn-glass">Edit</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <i class="fa-solid fa-boxes-stacked fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No inventory items found.</p>
+                            <small class="text-muted">Add your first item to get started.</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search and filter functionality
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const table = document.getElementById('inventoryTable');
+    const rows = table.querySelectorAll('.inventory-row');
+    
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const categoryValue = categoryFilter.value.toLowerCase();
+        
+        rows.forEach(row => {
+            const name = row.cells[1].textContent.toLowerCase();
+            const code = row.cells[0].textContent.toLowerCase();
+            const category = row.getAttribute('data-category').toLowerCase();
+            
+            const matchesSearch = name.includes(searchTerm) || code.includes(searchTerm);
+            const matchesCategory = !categoryValue || category.includes(categoryValue);
+            
+            row.style.display = matchesSearch && matchesCategory ? '' : 'none';
+        });
+    }
+    
+    searchInput.addEventListener('input', filterTable);
+    categoryFilter.addEventListener('change', filterTable);
+    
+    // Category Distribution Chart
+    const categoryCtx = document.getElementById('categoryDistChart');
+    if (categoryCtx) {
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Medicines', 'Equipment', 'Consumables', 'Lab Supplies'],
+                datasets: [{
+                    data: [40, 25, 20, 15],
+                    backgroundColor: ['#2563EB', '#22C55E', '#F59E0B', '#EF4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+});
+</script>
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard-utils.js') }}"></script>
+{% endblock %}
+{% endblock %}

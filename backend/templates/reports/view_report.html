@@ -1,0 +1,98 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}View Report - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Medical Report Details</h3>
+        <p class="text-muted mb-0">View and manage medical reports</p>
+    </div>
+    <div class="col-auto">
+        {% if report.file_name %}
+        <a href="{{ url_for('reports.download_report', report_id=report.id) }}" class="btn btn-outline-primary">
+            <i class="fas fa-download me-2"></i>Download
+        </a>
+        {% endif %}
+        <a href="{{ url_for('reports.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back
+        </a>
+    </div>
+</div>
+
+        <div class="glass-card animate-on-scroll fade-in-up">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <h5 class="mb-3">Report Information</h5>
+                    <p><strong>Title:</strong> {{ report.report_title }}</p>
+                    <p><strong>Type:</strong> {{ report.report_type|capitalize }}</p>
+                    <p><strong>Date:</strong> {{ report.report_date.strftime('%Y-%m-%d') }}</p>
+                    <p><strong>Doctor:</strong> {{ report.doctor.name }}</p>
+                    {% if report.is_confidential %}
+                    <p><span class="badge bg-danger">Confidential</span></p>
+                    {% endif %}
+                </div>
+                <div class="col-lg-6">
+                    <h5 class="mb-3">Patient Information</h5>
+                    <p><strong>Name:</strong> {{ report.patient.full_name }}</p>
+                    <p><strong>Age:</strong> {{ report.patient.age }}</p>
+                    <p><strong>Gender:</strong> {{ report.patient.gender }}</p>
+                    <p><strong>Phone:</strong> {{ report.patient.phone }}</p>
+                </div>
+                <div class="col-12">
+                    <h5 class="mb-3">Description</h5>
+                    <p>{{ report.description or 'No description provided' }}</p>
+                </div>
+                {% if report.file_name %}
+                <div class="col-12">
+                    <h5 class="mb-3">Attached File</h5>
+                    <div class="p-3 bg-light rounded">
+                        <p><strong>Filename:</strong> {{ report.file_name }}</p>
+                        <p><strong>Size:</strong> {{ (report.file_size / 1024)|round(2) }} KB</p>
+                        <a href="{{ url_for('reports.download_report', report_id=report.id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-download me-2"></i>Download File
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-on-scroll {
+    opacity: 0;
+}
+
+.animate-on-scroll.animated {
+    animation: fade-in-up 0.5s ease-out forwards;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+            }
+        });
+    }, { threshold: 0.1 });
+    animatedElements.forEach(el => observer.observe(el));
+});
+</script>
+{% endblock %}

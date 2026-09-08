@@ -1,0 +1,108 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}OPD Dashboard - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">OPD Dashboard</h3>
+        <p class="text-muted mb-0">Outpatient Department Management</p>
+    </div>
+    <div class="col-auto">
+        <span class="badge bg-primary px-3 py-2">{{ today_visits|length }} Today's Visits</span>
+    </div>
+</div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card animate-on-scroll fade-in-up">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>{{ today_visits|length }}</h3>
+                    <p>Total Visits Today</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card animate-on-scroll fade-in-up" style="animation-delay: 0.1s">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>{{ waiting_count }}</h3>
+                    <p>Waiting</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card animate-on-scroll fade-in-up" style="animation-delay: 0.2s">
+                    <div class="stat-icon info">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <h3>{{ in_progress_count }}</h3>
+                    <p>In Progress</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card animate-on-scroll fade-in-up" style="animation-delay: 0.3s">
+                    <div class="stat-icon success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>{{ completed_count }}</h3>
+                    <p>Completed</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card animate-on-scroll fade-in-up">
+            <h4 class="mb-4">Today's OPD Visits</h4>
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Check-in Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visit in today_visits %}
+                        <tr>
+                            <td><span class="badge bg-primary">#{{ visit.token_number }}</span></td>
+                            <td>{{ visit.patient.full_name }}</td>
+                            <td>{{ visit.doctor.name }}</td>
+                            <td>{{ visit.check_in_time.strftime('%H:%M') if visit.check_in_time else '-' }}</td>
+                            <td>
+                                <span class="badge badge-{{ 'success' if visit.status == 'completed' else 'warning' if visit.status == 'in_progress' else 'secondary' }}">
+                                    {{ visit.status|capitalize }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if visit.status == 'waiting' %}
+                                <a href="{{ url_for('opd.start_consultation', visit_id=visit.id) }}" class="btn btn-sm btn-primary">
+                                    Start
+                                </a>
+                                {% elif visit.status == 'in_progress' %}
+                                <a href="{{ url_for('opd.consultation', visit_id=visit.id) }}" class="btn btn-sm btn-info">
+                                    Consult
+                                </a>
+                                <a href="{{ url_for('opd.complete_consultation', visit_id=visit.id) }}" class="btn btn-sm btn-success">
+                                    Complete
+                                </a>
+                                {% endif %}
+                                <a href="{{ url_for('opd.visit_history', patient_id=visit.patient_id) }}" class="btn btn-sm btn-outline-secondary">
+                                    History
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No visits today</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+{% endblock %}

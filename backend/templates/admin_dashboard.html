@@ -1,0 +1,284 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Admin Dashboard - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Admin Dashboard</h3>
+        <p class="text-muted mb-0">Welcome back, Admin</p>
+    </div>
+</div>
+
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.primary { background: linear-gradient(135deg, #667eea, #764ba2); }
+.stat-icon.success { background: linear-gradient(135deg, #11998e, #38ef7d); }
+.stat-icon.warning { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.stat-icon.info { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.stat-icon.danger { background: linear-gradient(135deg, #fa709a, #fee140); }
+
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-on-scroll {
+    opacity: 0;
+}
+
+.animate-on-scroll.animated {
+    animation: fade-in-up 0.5s ease-out forwards;
+}
+</style>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card animate-on-scroll fade-in-up">
+            <div class="stat-icon primary">
+                <i class="fas fa-user-md"></i>
+            </div>
+            <h3>{{ stats.doctors }}</h3>
+            <p>Total Doctors</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card animate-on-scroll fade-in-up" style="animation-delay: 0.1s">
+            <div class="stat-icon success">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <h3>{{ stats.appointments }}</h3>
+            <p>Appointments</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card animate-on-scroll fade-in-up" style="animation-delay: 0.2s">
+            <div class="stat-icon warning">
+                <i class="fas fa-hospital"></i>
+            </div>
+            <h3>{{ stats.departments }}</h3>
+            <p>Departments</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card animate-on-scroll fade-in-up" style="animation-delay: 0.3s">
+            <div class="stat-icon info">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>{{ stats.patients }}</h3>
+            <p>Patients</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card animate-on-scroll fade-in-up" style="animation-delay:0.4s">
+            <div class="stat-icon danger">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <h3>{{ stats.inventory_items }}</h3>
+            <p>Inventory Items</p>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Appointments -->
+<div class="glass-card mb-4 animate-on-scroll fade-in-up">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4>Recent Appointments</h4>
+        <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>Patient Name</th>
+                    <th>Doctor</th>
+                    <th>Department</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in recent_appointments %}
+                <tr>
+                    <td>{{ appointment.patient.full_name }}</td>
+                    <td>{{ appointment.doctor.name }}</td>
+                    <td>{{ appointment.doctor.department.department_name }}</td>
+                    <td>
+                        {{ appointment.appointment_date }}
+                        <br>
+                        <small class="text-muted">{{ appointment.appointment_time }}</small>
+                    </td>
+                    <td>
+                        {% if appointment.status == 'confirmed' %}
+                            <span class="badge bg-success">Confirmed</span>
+                        {% elif appointment.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                        {% elif appointment.status == 'cancelled' %}
+                            <span class="badge bg-danger">Cancelled</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Completed</span>
+                        {% endif %}
+                    </td>
+                    <td class="d-flex gap-2 flex-wrap">
+                        <a href="{{ url_for('auth.update_appointment_status', id=appointment.id, status='confirmed') }}" class="btn btn-sm btn-success">Confirm</a>
+                        <a href="{{ url_for('auth.update_appointment_status', id=appointment.id, status='cancelled') }}" class="btn btn-sm btn-danger">Cancel</a>
+                        <a href="{{ url_for('auth.update_appointment_status', id=appointment.id, status='completed') }}" class="btn btn-sm btn-primary">Complete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Manage Users -->
+<div class="glass-card mb-4 animate-on-scroll fade-in-up">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4><i class="fas fa-users-cog me-2"></i>Manage Users</h4>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Current Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in all_users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% if user.role == 'doctor' %}
+                            <span class="badge bg-primary">Doctor</span>
+                        {% elif user.role == 'staff' %}
+                            <span class="badge bg-success">Staff</span>
+                        {% elif user.role == 'superadmin' %}
+                            <span class="badge bg-dark">Super Admin</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Patient</span>
+                        {% endif %}
+                    </td>
+                    <td class="d-flex gap-2 flex-wrap">
+                        <a href="{{ url_for('auth.change_role', user_id=user.id, role='doctor') }}" class="btn btn-sm btn-primary">Make Doctor</a>
+                        <a href="{{ url_for('auth.change_role', user_id=user.id, role='staff') }}" class="btn btn-sm btn-success">Make Staff</a>
+                        <a href="{{ url_for('auth.change_role', user_id=user.id, role='patient') }}" class="btn btn-sm btn-secondary">Make Patient</a>
+                        <a href="{{ url_for('auth.change_role', user_id=user.id, role='superadmin') }}" class="btn btn-sm btn-dark">Super Admin</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="glass-card animate-on-scroll fade-in-up">
+            <h4 class="mb-4">Quick Actions</h4>
+            <div class="d-grid gap-3">
+                <button class="btn btn-primary"><i class="fas fa-plus me-2"></i>Add New Doctor</button>
+                <button class="btn btn-primary"><i class="fas fa-plus me-2"></i>Add New Department</button>
+                <button class="btn btn-primary"><i class="fas fa-calendar-plus me-2"></i>Schedule Appointment</button>
+                <button class="btn btn-primary"><i class="fas fa-file-medical me-2"></i>Generate Report</button>
+                <a href="{{ url_for('inventory.dashboard') }}" class="btn btn-warning"><i class="fas fa-boxes me-2"></i>Inventory Management</a>
+                <a href="{{ url_for('inventory.add_item') }}" class="btn btn-success"><i class="fas fa-plus me-2"></i>Add Inventory Item</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card animate-on-scroll fade-in-up" style="animation-delay: 0.1s">
+            <h4 class="mb-4">Recent Messages</h4>
+            <div class="list-group list-group-flush">
+                <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3">
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <span class="text-white fw-bold">J</span>
+                    </div>
+                    <div class="d-flex gap-2 w-100 justify-content-between">
+                        <div>
+                            <h6 class="mb-0">John Smith</h6>
+                            <p class="mb-0 opacity-75 small">Inquiry about appointment...</p>
+                        </div>
+                        <small class="opacity-50 text-nowrap">2h ago</small>
+                    </div>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3">
+                    <div class="bg-success rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <span class="text-white fw-bold">M</span>
+                    </div>
+                    <div class="d-flex gap-2 w-100 justify-content-between">
+                        <div>
+                            <h6 class="mb-0">Mary Johnson</h6>
+                            <p class="mb-0 opacity-75 small">Thank you for the care...</p>
+                        </div>
+                        <small class="opacity-50 text-nowrap">5h ago</small>
+                    </div>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3">
+                    <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <span class="text-white fw-bold">R</span>
+                    </div>
+                    <div class="d-flex gap-2 w-100 justify-content-between">
+                        <div>
+                            <h6 class="mb-0">Robert Davis</h6>
+                            <p class="mb-0 opacity-75 small">Question about billing...</p>
+                        </div>
+                        <small class="opacity-50 text-nowrap">1d ago</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+            }
+        });
+    }, { threshold: 0.1 });
+    animatedElements.forEach(el => observer.observe(el));
+});
+</script>
+{% endblock %}

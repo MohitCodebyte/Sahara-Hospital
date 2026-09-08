@@ -1,0 +1,171 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Analytics Dashboard - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Analytics Dashboard</h3>
+        <p class="text-muted mb-0">Hospital Performance Analytics</p>
+    </div>
+</div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card animate-on-scroll fade-in-up">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>{{ total_patients }}</h3>
+                    <p>Total Patients</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card animate-on-scroll fade-in-up" style="animation-delay: 0.1s">
+                    <div class="stat-icon success">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3>{{ total_appointments }}</h3>
+                    <p>Total Appointments</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card animate-on-scroll fade-in-up" style="animation-delay: 0.2s">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <h3>${{ total_revenue|round(2) }}</h3>
+                    <p>Total Revenue</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card animate-on-scroll fade-in-up" style="animation-delay: 0.3s">
+                    <div class="stat-icon info">
+                        <i class="fas fa-prescription"></i>
+                    </div>
+                    <h3>{{ total_prescriptions }}</h3>
+                    <p>Prescriptions</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="glass-card animate-on-scroll fade-in-up">
+                    <h4 class="mb-4">Doctor Performance</h4>
+                    <div class="table-responsive">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Specialization</th>
+                                    <th>Appointments</th>
+                                    <th>Prescriptions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in doctor_stats %}
+                                <tr>
+                                    <td>{{ stat.name }}</td>
+                                    <td>{{ stat.specialization }}</td>
+                                    <td>{{ stat.appointment_count or 0 }}</td>
+                                    <td>{{ stat.prescription_count or 0 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="glass-card animate-on-scroll fade-in-up" style="animation-delay: 0.1s">
+                    <h4 class="mb-4">Department Statistics</h4>
+                    <div class="table-responsive">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Doctors</th>
+                                    <th>Appointments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in dept_stats %}
+                                <tr>
+                                    <td>{{ stat.department_name }}</td>
+                                    <td>{{ stat.doctor_count or 0 }}</td>
+                                    <td>{{ stat.appointment_count or 0 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.primary { background: linear-gradient(135deg, #667eea, #764ba2); }
+.stat-icon.success { background: linear-gradient(135deg, #11998e, #38ef7d); }
+.stat-icon.warning { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.stat-icon.info { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.stat-icon.danger { background: linear-gradient(135deg, #fa709a, #fee140); }
+
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-on-scroll {
+    opacity: 0;
+}
+
+.animate-on-scroll.animated {
+    animation: fade-in-up 0.5s ease-out forwards;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+            }
+        });
+    }, { threshold: 0.1 });
+    animatedElements.forEach(el => observer.observe(el));
+});
+</script>
+{% endblock %}

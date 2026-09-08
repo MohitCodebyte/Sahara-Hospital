@@ -1,0 +1,110 @@
+{% extends "staff/layout.html" %}
+
+{% block title %}OPD Fees - Sahara Hospital{% endblock %}
+
+{% block staff_content %}
+<!-- Page Header -->
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h1 class="glass-card-title mb-1">Fee Management</h1>
+        <p class="glass-card-subtitle">Manage OPD fees and billing structure</p>
+    </div>
+</div>
+
+<!-- Add Fee Card -->
+<div class="glass-card mb-4">
+    <div class="glass-card-header">
+        <h3 class="glass-card-title mb-1">Add New Fee</h3>
+        <p class="glass-card-subtitle">Create a new fee structure for OPD services</p>
+    </div>
+    <form method="POST" action="{{ url_for('opd.add_fee') }}">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="glass-label">Department *</label>
+                <select name="department_id" class="glass-select" required>
+                    <option value="">Select Department</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}">{{ dept.department_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="glass-label">Doctor (Optional)</label>
+                <select name="doctor_id" class="glass-select">
+                    <option value="">All Doctors</option>
+                    {% for doctor in doctors %}
+                    <option value="{{ doctor.id }}">{{ doctor.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="glass-label">Fee Name *</label>
+                <input type="text" name="fee_name" class="glass-input" required placeholder="e.g., Consultation">
+            </div>
+            <div class="col-md-4">
+                <label class="glass-label">Fee Amount *</label>
+                <div class="glass-input-group">
+                    <i class="fa-solid fa-dollar-sign input-icon"></i>
+                    <input type="number" step="0.01" name="fee_amount" class="glass-input" required placeholder="500.00">
+                </div>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="glass-btn glass-btn-primary">
+                    <i class="fa-solid fa-plus me-2"></i>Add Fee
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Active Fees Card -->
+<div class="glass-card">
+    <div class="glass-card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="glass-card-title mb-1">Active Fees</h3>
+                <p class="glass-card-subtitle">Current fee structure</p>
+            </div>
+        </div>
+    </div>
+    <div class="glass-table-container">
+        <table class="glass-table">
+            <thead>
+                <tr>
+                    <th>Department</th>
+                    <th>Doctor</th>
+                    <th>Fee Name</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fee in fees %}
+                <tr>
+                    <td>{{ fee.department.department_name }}</td>
+                    <td>{{ fee.doctor.name if fee.doctor else 'All Doctors' }}</td>
+                    <td>{{ fee.fee_name }}</td>
+                    <td><strong>${{ fee.fee_amount }}</strong></td>
+                    <td>
+                        <a href="{{ url_for('opd.deactivate_fee', fee_id=fee.id) }}" class="glass-btn glass-btn-danger glass-btn-sm">
+                            <i class="fa-solid fa-trash me-1"></i>Deactivate
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <div class="glass-stat-icon glass-stat-icon-info" style="width: 80px; height: 80px; margin: 0 auto 1rem;">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                        </div>
+                        <h4 class="glass-card-title">No Active Fees</h4>
+                        <p class="glass-card-subtitle">Add fees to get started</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

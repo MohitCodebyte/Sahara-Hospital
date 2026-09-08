@@ -1,0 +1,111 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Upload Report - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Upload Medical Report</h3>
+        <p class="text-muted mb-0">Add new medical reports to the system</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('reports.dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+
+        <div class="glass-card animate-on-scroll fade-in-up">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Patient *</label>
+                        <select name="patient_id" class="form-select" required>
+                            <option value="">Select Patient</option>
+                            {% for patient in patients %}
+                            <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Report Type *</label>
+                        <select name="report_type" class="form-select" required>
+                            <option value="">Select Type</option>
+                            <option value="lab">Lab Report</option>
+                            <option value="scan">Scan Report</option>
+                            <option value="xray">X-Ray</option>
+                            <option value="mri">MRI</option>
+                            <option value="ct">CT Scan</option>
+                            <option value="pathology">Pathology</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Report Title *</label>
+                        <input type="text" name="report_title" class="form-control" required placeholder="e.g., Blood Test Results">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Report Date</label>
+                        <input type="date" name="report_date" class="form-control" value="{{ today }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Report description"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Upload File (PDF)</label>
+                        <input type="file" name="file" class="form-control" accept=".pdf">
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input type="checkbox" name="is_confidential" class="form-check-input" id="confidential">
+                            <label class="form-check-label" for="confidential">Mark as Confidential</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Upload Report
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-on-scroll {
+    opacity: 0;
+}
+
+.animate-on-scroll.animated {
+    animation: fade-in-up 0.5s ease-out forwards;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+            }
+        });
+    }, { threshold: 0.1 });
+    animatedElements.forEach(el => observer.observe(el));
+});
+</script>
+{% endblock %}

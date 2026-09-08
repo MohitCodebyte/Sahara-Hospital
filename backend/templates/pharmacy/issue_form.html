@@ -1,0 +1,277 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Issue Medicine - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Issue Medicines to Patient</h3>
+        <p class="text-muted mb-0">Dispense medicines from available inventory batches and auto-generate patient invoice.</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('pharmacy.issues') }}" class="btn btn-outline-secondary px-3 rounded-pill">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Registry
+        </a>
+    </div>
+</div>
+
+<div class="glass-card">
+    <form method="POST" id="issueForm">
+        <!-- Patient Metadata -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label for="patient_id" class="form-label fw-semibold">Patient Name *</label>
+                <select class="form-select rounded-3" id="patient_id" name="patient_id" required>
+                    <option value="" disabled selected>Select Patient</option>
+                    {% for patient in patients %}
+                    <option value="{{ patient.id }}">{{ patient.full_name }} (Phone: {{ patient.phone }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="prescription_id" class="form-label fw-semibold">Prescription Reference (Optional)</label>
+                <select class="form-select rounded-3" id="prescription_id" name="prescription_id">
+                    <option value="">Direct OTC / No Prescription</option>
+                    {% for presc in prescriptions %}
+                    <option value="{{ presc.id }}">Prescription #{{ presc.id }} (Patient ID: {{ presc.patient_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="issue_date" class="form-label fw-semibold">Issue Date *</label>
+                <input type="date" class="form-control rounded-3" id="issue_date" name="issue_date" required>
+            </div>
+        </div>
+
+        <h5 class="fw-bold mb-3 border-bottom pb-2 text-success">Dispense Medicines</h5>
+
+        <!-- Multi-item table -->
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered align-middle" id="itemsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 50%;">Medicine Batch (Batch No., Stock, Expiry) *</th>
+                        <th style="width: 15%;">Unit Price</th>
+                        <th style="width: 15%;">Quantity *</th>
+                        <th style="width: 15%;">Total</th>
+                        <th style="width: 5%;"></th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody">
+                    <tr class="item-row">
+                        <td>
+                            <select class="form-select rounded-3 batch-select" name="batch_id[]" required>
+                                <option value="" disabled selected>Select Medicine Batch</option>
+                                {% for batch in batches %}
+                                <option value="{{ batch.id }}" data-price="{{ batch.sale_price }}" data-qty="{{ batch.current_qty }}">
+                                    {{ batch.display_label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <span class="row-price fw-semibold text-muted">₹0.00</span>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control rounded-3 qty-input" name="quantity[]" min="1" required value="1" placeholder="Qty">
+                            <div class="form-text max-stock-hint text-danger mt-1" style="font-size: 0.75rem;"></div>
+                        </td>
+                        <td>
+                            <span class="row-total fw-bold text-dark">₹0.00</span>
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-circle remove-row-btn"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button type="button" class="btn btn-outline-success px-3 rounded-pill mb-4" id="addRowBtn">
+            <i class="fa-solid fa-plus me-1"></i> Add Another Medicine
+        </button>
+
+        <!-- Calculations -->
+        <div class="row justify-content-end">
+            <div class="col-md-5">
+                <div class="glass-card p-3" style="background: rgba(255, 255, 255, 0.65);">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Subtotal:</span>
+                        <span class="fw-bold" id="subtotalVal">₹0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">CGST (9%):</span>
+                        <span class="fw-semibold" id="cgstVal">₹0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">SGST (9%):</span>
+                        <span class="fw-semibold" id="sgstVal">₹0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Discount Allowed:</span>
+                        <div class="input-group" style="width: 150px;">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" step="0.01" class="form-control" id="discount" name="discount" value="0.00" min="0">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fs-5 fw-bold text-dark">Total Amount Due:</span>
+                        <span class="fs-4 fw-bold text-success" id="totalVal">₹0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end gap-2">
+            <a href="{{ url_for('pharmacy.issues') }}" class="btn btn-outline-secondary px-4 rounded-pill">Cancel</a>
+            <button type="submit" class="btn btn-success px-4 rounded-pill">
+                <i class="fa-solid fa-truck-dispensary me-1"></i> Issue & Invoice Patient
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Template for cloning rows -->
+<table style="display: none;">
+    <tbody id="rowTemplate">
+        <tr class="item-row">
+            <td>
+                <select class="form-select rounded-3 batch-select" name="batch_id[]" required>
+                    <option value="" disabled selected>Select Medicine Batch</option>
+                    {% for batch in batches %}
+                    <option value="{{ batch.id }}" data-price="{{ batch.sale_price }}" data-qty="{{ batch.current_qty }}">
+                        {{ batch.display_label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <span class="row-price fw-semibold text-muted">₹0.00</span>
+            </td>
+            <td>
+                <input type="number" class="form-control rounded-3 qty-input" name="quantity[]" min="1" required value="1" placeholder="Qty">
+                <div class="form-text max-stock-hint text-danger mt-1" style="font-size: 0.75rem;"></div>
+            </td>
+            <td>
+                <span class="row-total fw-bold text-dark">₹0.00</span>
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle remove-row-btn"><i class="fa-solid fa-trash-can"></i></button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set today's date in date picker
+        const dateInput = document.getElementById('issue_date');
+        if (!dateInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+        }
+
+        const itemsBody = document.getElementById('itemsBody');
+        const addRowBtn = document.getElementById('addRowBtn');
+        const rowTemplate = document.getElementById('rowTemplate').querySelector('tr');
+        const discountInput = document.getElementById('discount');
+
+        // Add dynamic row
+        addRowBtn.addEventListener('click', function() {
+            const newRow = rowTemplate.cloneNode(true);
+            itemsBody.appendChild(newRow);
+            bindRowEvents(newRow);
+            calculateTotals();
+        });
+
+        // Remove row
+        itemsBody.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-row-btn')) {
+                const row = e.target.closest('.item-row');
+                if (itemsBody.querySelectorAll('.item-row').length > 1) {
+                    row.remove();
+                    calculateTotals();
+                } else {
+                    alert("At least one item is required to issue!");
+                }
+            }
+        });
+
+        // Discount changes
+        discountInput.addEventListener('input', calculateTotals);
+
+        // Bind events to initial rows
+        itemsBody.querySelectorAll('.item-row').forEach(bindRowEvents);
+
+        function bindRowEvents(row) {
+            const batchSelect = row.querySelector('.batch-select');
+            const qtyInput = row.querySelector('.qty-input');
+            const rowPriceSpan = row.querySelector('.row-price');
+            const maxStockHint = row.querySelector('.max-stock-hint');
+
+            batchSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+                const maxQty = parseInt(selectedOption.getAttribute('data-qty')) || 0;
+                
+                rowPriceSpan.textContent = '₹' + price.toFixed(2);
+                qtyInput.setAttribute('max', maxQty);
+                qtyInput.value = Math.min(parseInt(qtyInput.value) || 1, maxQty);
+                maxStockHint.textContent = 'Max available: ' + maxQty;
+                
+                updateRowTotal(row);
+                calculateTotals();
+            });
+
+            qtyInput.addEventListener('input', () => {
+                const maxQty = parseInt(qtyInput.getAttribute('max')) || 999999;
+                let val = parseInt(qtyInput.value) || 0;
+                if (val > maxQty) {
+                    qtyInput.value = maxQty;
+                }
+                updateRowTotal(row);
+                calculateTotals();
+            });
+        }
+
+        function updateRowTotal(row) {
+            const batchSelect = row.querySelector('.batch-select');
+            const selectedOption = batchSelect.options[batchSelect.selectedIndex];
+            const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+            const qty = parseInt(row.querySelector('.qty-input').value) || 0;
+            const rowTotalSpan = row.querySelector('.row-total');
+            
+            const total = qty * price;
+            rowTotalSpan.textContent = '₹' + total.toFixed(2);
+            return total;
+        }
+
+        function calculateTotals() {
+            let subtotal = 0;
+            itemsBody.querySelectorAll('.item-row').forEach(row => {
+                const batchSelect = row.querySelector('.batch-select');
+                if (batchSelect.selectedIndex > 0) {
+                    const selectedOption = batchSelect.options[batchSelect.selectedIndex];
+                    const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+                    const qty = parseInt(row.querySelector('.qty-input').value) || 0;
+                    subtotal += qty * price;
+                }
+            });
+
+            const cgst = subtotal * 0.09;
+            const sgst = subtotal * 0.09;
+            const discount = parseFloat(discountInput.value) || 0;
+            const total = subtotal + cgst + sgst - discount;
+
+            document.getElementById('subtotalVal').textContent = '₹' + subtotal.toFixed(2);
+            document.getElementById('cgstVal').textContent = '₹' + cgst.toFixed(2);
+            document.getElementById('sgstVal').textContent = '₹' + sgst.toFixed(2);
+            document.getElementById('totalVal').textContent = '₹' + Math.max(0, total).toFixed(2);
+        }
+    });
+</script>
+{% endblock %}

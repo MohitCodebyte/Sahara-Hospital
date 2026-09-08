@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Departments - Sahara Hospital{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/departments.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="departments-hero">
+    <div class="container">
+        <div class="animate-fade-up">
+            <h1>Our Departments</h1>
+            <p>Comprehensive healthcare services across various medical specialties</p>
+        </div>
+    </div>
+</section>
+
+<!-- Departments Section -->
+<section class="departments-section">
+    <div class="container">
+        <div class="row g-4" data-animate-stagger>
+            {% for department in departments %}
+            <div class="col-lg-4 col-md-6">
+                <div class="department-card-premium">
+                    <div class="card-image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=400&h=300&fit=crop" 
+                             alt="{{ department.department_name }}">
+                        <div class="card-overlay"></div>
+                        <div class="department-icon">
+                            <i class="fas {{ department.icon or 'fa-hospital' }}"></i>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5>{{ department.department_name }}</h5>
+                        <p>{{ department.description }}</p>
+                        <a href="{{ url_for('departments.detail', department_id=department.id) }}" class="btn-link">
+                            Learn More <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

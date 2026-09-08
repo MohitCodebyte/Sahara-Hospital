@@ -1,0 +1,326 @@
+{% extends 'admin/layout.html' %}
+{% block title %}MRD Reports{% endblock %}
+{% block admin_content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">MRD Reports</h2>
+            <p class="text-muted mb-0">Generate and manage medical record reports</p>
+        </div>
+        <button class="glass-btn glass-btn-primary">
+            <i class="fa-solid fa-plus me-2"></i>New Report
+        </button>
+    </div>
+    
+    <!-- Quick Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-primary mb-3">
+                    <i class="fa-solid fa-file-medical"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Total Files</span>
+                <p class="glass-stat-value" data-counter="0" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +125 this month</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-success mb-3">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Active Files</span>
+                <p class="glass-stat-value" data-counter="0" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +8% this week</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-warning mb-3">
+                    <i class="fa-solid fa-archive"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Archived Files</span>
+                <p class="glass-stat-value" data-counter="0" data-duration="1500">0</p>
+                <p class="glass-stat-change negative"><i class="fa-solid fa-arrow-down"></i> -3% from last month</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-info mb-3">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Pending Requests</span>
+                <p class="glass-stat-value" data-counter="0" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +5 new today</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Report Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Quick Reports</h5>
+                    <p class="glass-card-subtitle">Frequently used reports</p>
+                </div>
+                <div class="d-grid gap-2">
+                    <button class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-file-medical me-2"></i>File Movement Report
+                    </button>
+                    <button class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-clock-rotate-left me-2"></i>File History Report
+                    </button>
+                    <button class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-user-clock me-2"></i>File Retention Report
+                    </button>
+                    <button class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-exclamation-triangle me-2"></i>Missing Files Report
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Department Reports</h5>
+                    <p class="glass-card-subtitle">Department-specific reports</p>
+                </div>
+                <div class="d-grid gap-2">
+                    <button class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-building me-2"></i>Department-wise File Distribution
+                    </button>
+                    <button class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-users me-2"></i>Patient File Statistics
+                    </button>
+                    <button class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-chart-pie me-2"></i>File Status Summary
+                    </button>
+                    <button class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-calendar-check me-2"></i>Daily File Activity
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Report Generator -->
+    <div class="glass-card mb-4">
+        <div class="glass-card-header">
+            <h5 class="glass-card-title">Generate Custom Report</h5>
+            <p class="glass-card-subtitle">Create custom reports with filters</p>
+        </div>
+        <form>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Report Type</label>
+                    <select class="form-select">
+                        <option value="">Select Report Type</option>
+                        <option value="movement">File Movement</option>
+                        <option value="history">File History</option>
+                        <option value="retention">File Retention</option>
+                        <option value="missing">Missing Files</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">From Date</label>
+                    <input type="date" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">To Date</label>
+                    <input type="date" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="glass-btn glass-btn-primary w-100">Generate</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Recent Reports -->
+    <div class="glass-card">
+        <div class="glass-card-header">
+            <h5 class="glass-card-title">Recent Reports</h5>
+            <p class="glass-card-subtitle">Latest generated reports</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="report-item-card">
+                    <div class="report-item-icon report-item-icon-success">
+                        <i class="fa-solid fa-file-medical"></i>
+                    </div>
+                    <div class="report-item-details">
+                        <div class="report-item-title">File Movement Report</div>
+                        <div class="report-item-meta">Generated 2 hours ago</div>
+                        <div class="report-item-status">Completed</div>
+                    </div>
+                    <div class="report-item-actions">
+                        <button class="glass-btn glass-btn-sm glass-btn-glass">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                        <button class="glass-btn glass-btn-sm glass-btn-glass">
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="report-item-card">
+                    <div class="report-item-icon report-item-icon-primary">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div class="report-item-details">
+                        <div class="report-item-title">File History Report</div>
+                        <div class="report-item-meta">Generated 5 hours ago</div>
+                        <div class="report-item-status">Completed</div>
+                    </div>
+                    <div class="report-item-actions">
+                        <button class="glass-btn glass-btn-sm glass-btn-glass">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                        <button class="glass-btn glass-btn-sm glass-btn-glass">
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="report-item-card">
+                    <div class="report-item-icon report-item-icon-warning">
+                        <i class="fa-solid fa-user-clock"></i>
+                    </div>
+                    <div class="report-item-details">
+                        <div class="report-item-title">File Retention Report</div>
+                        <div class="report-item-meta">Generated 1 day ago</div>
+                        <div class="report-item-status">Completed</div>
+                    </div>
+                    <div class="report-item-actions">
+                        <button class="glass-btn glass-btn-sm glass-btn-glass">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                        <button class="glass-btn glass-btn-sm glass-btn-glass">
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="report-item-card">
+                    <div class="report-item-icon report-item-icon-info">
+                        <i class="fa-solid fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="report-item-details">
+                        <div class="report-item-title">Missing Files Report</div>
+                        <div class="report-item-meta">Generated 2 days ago</div>
+                        <div class="report-item-status">Completed</div>
+                    </div>
+                    <div class="report-item-actions">
+                        <button class="glass-btn glass-btn-sm glass-btn-glass">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                        <button class="glass-btn glass-btn-sm glass-btn-glass">
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Export Options -->
+    <div class="glass-card mt-4">
+        <div class="glass-card-header">
+            <h5 class="glass-card-title">Export Options</h5>
+            <p class="glass-card-subtitle">Download reports in various formats</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="glass-btn glass-btn-primary">
+                <i class="fa-solid fa-file-pdf me-2"></i>Export PDF
+            </button>
+            <button class="glass-btn glass-btn-success">
+                <i class="fa-solid fa-file-excel me-2"></i>Export Excel
+            </button>
+            <button class="glass-btn glass-btn-glass">
+                <i class="fa-solid fa-print me-2"></i>Print Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.report-item-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.report-item-card:hover {
+    border-color: #2563EB;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.report-item-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+}
+
+.report-item-icon-success {
+    background: #22C55E;
+}
+
+.report-item-icon-primary {
+    background: #2563EB;
+}
+
+.report-item-icon-warning {
+    background: #F59E0B;
+}
+
+.report-item-icon-info {
+    background: #3B82F6;
+}
+
+.report-item-details {
+    flex: 1;
+}
+
+.report-item-title {
+    font-weight: 600;
+    color: #0F172A;
+    margin-bottom: 0.25rem;
+}
+
+.report-item-meta {
+    font-size: 0.875rem;
+    color: #64748B;
+    margin-bottom: 0.25rem;
+}
+
+.report-item-status {
+    font-size: 0.875rem;
+    color: #22C55E;
+}
+
+.report-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+</style>
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard-utils.js') }}"></script>
+{% endblock %}
+{% endblock %}

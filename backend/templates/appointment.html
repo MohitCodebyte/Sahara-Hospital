@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment - Sahara Hospital{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('home.index') }}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Book Appointment</li>
+            </ol>
+        </nav>
+        <h1>Book an Appointment</h1>
+        <p>Schedule your visit with our specialists</p>
+    </div>
+</div>
+
+<!-- Appointment Form -->
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="glass-card animate-on-scroll fade-in-up">
+                    <div class="text-center mb-4">
+                        <h3>Appointment Details</h3>
+                        <p class="text-muted">Fill in the form below to book your appointment</p>
+                    </div>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form action="{{ url_for('appointments.book') }}" method="POST">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Full Name *</label>
+                                <input type="text" name="name" class="form-control" value="{{ patient.full_name if patient else '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email Address *</label>
+                                <input type="email"
+                                    name="email"
+                                    class="form-control"
+                                    value="{{ patient.email if patient else '' }}"
+                                    >
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phone Number *</label>
+                                <input type="tel"
+                                    name="phone"
+                                    class="form-control"
+                                    value="{{ patient.phone if patient else '' }}"
+                                    >
+                            </div>
+
+
+                            <div class="col-md-6">
+                                <label class="form-label">Age</label>
+                                <input type="text"
+                                    class="form-control"
+                                    value="{{ patient.age if patient else '' }}"
+                                    >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Gender</label>
+                                <input type="text"
+                                    class="form-control"
+                                    value="{{ patient.gender if patient else '' }}"
+                                    >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Department *</label>
+                                <select name="department_id" class="form-select" required id="departmentSelect">
+                                    <option value="">Select Department</option>
+                                    {% for department in departments %}
+                                    <option value="{{ department.id }}">{{ department.department_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Doctor *</label>
+                                <select name="doctor_id" class="form-select" required id="doctorSelect">
+                                    <option value="">Select Doctor</option>
+                                    {% for doctor in doctors %}
+                                    <option value="{{ doctor.id }}" data-department="{{ doctor.department_id }}">{{ doctor.name }} - {{ doctor.specialization }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Preferred Date *</label>
+                                <input type="date" name="date" class="form-control" required id="appointmentDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Preferred Time *</label>
+                                <input type="time" name="time" class="form-control" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Reason for Visit</label>
+                                <textarea name="reason" class="form-control" rows="4" placeholder="Describe your symptoms or reason for visit"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Please arrive 15 minutes before your appointment time. Bring valid ID and any relevant medical records.
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-gradient w-100">
+                                    <i class="fas fa-calendar-check me-2"></i>Book Appointment
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Info Cards -->
+<section class="section" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="action-card animate-on-scroll fade-in-up">
+                    <div class="icon">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <h4>Call Us</h4>
+                    <p>+1 234 567 8900</p>
+                    <p class="text-muted small">Mon-Fri: 8AM-8PM</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="action-card animate-on-scroll fade-in-up" style="animation-delay: 0.1s">
+                    <div class="icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h4>Email Us</h4>
+                    <p>appointments@saharahospital.com</p>
+                    <p class="text-muted small">We reply within 24 hours</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="action-card animate-on-scroll fade-in-up" style="animation-delay: 0.2s">
+                    <div class="icon">
+                        <i class="fas fa-ambulance"></i>
+                    </div>
+                    <h4>Emergency</h4>
+                    <p>911</p>
+                    <p class="text-muted small">24/7 Available</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Set minimum date to today
+const dateInput = document.getElementById('appointmentDate');
+const today = new Date().toISOString().split('T')[0];
+dateInput.setAttribute('min', today);
+
+// Filter doctors based on department selection
+const departmentSelect = document.getElementById('departmentSelect');
+const doctorSelect = document.getElementById('doctorSelect');
+
+departmentSelect.addEventListener('change', function() {
+    const selectedDepartment = this.value;
+    const doctorOptions = doctorSelect.querySelectorAll('option');
+    
+    doctorOptions.forEach(option => {
+        if (option.value === '') {
+            option.style.display = 'block';
+        } else {
+            const doctorDepartment = option.getAttribute('data-department');
+            if (selectedDepartment === '' || doctorDepartment === selectedDepartment) {
+                option.style.display = 'block';
+            } else {
+                option.style.display = 'none';
+            }
+        }
+    });
+    
+    // Reset doctor selection
+    doctorSelect.value = '';
+});
+</script>
+{% endblock %}

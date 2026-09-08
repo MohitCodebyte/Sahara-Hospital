@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="card shadow border-0">
+
+        <div class="card-header bg-primary text-white">
+
+            <h3 class="mb-0">
+                All Appointments
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Patient</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for appointment in appointments %}
+
+                    <tr>
+
+                        <td>{{ appointment.id }}</td>
+
+                        <td>
+                            {{ appointment.patient.full_name }}
+                        </td>
+
+                        <td>
+                            {{ appointment.appointment_date }}
+                        </td>
+
+                        <td>
+                            {{ appointment.appointment_time }}
+                        </td>
+
+                        <td>
+                            {{ appointment.status }}
+                        </td>
+
+                        <td>
+
+                            <a href="{{ url_for(
+                                'doctors.view_appointment',
+                                appointment_id=appointment.id
+                            ) }}"
+                            class="btn btn-primary btn-sm">
+
+                                View
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

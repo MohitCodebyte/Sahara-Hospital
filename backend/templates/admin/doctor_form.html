@@ -1,0 +1,81 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ 'Edit' if doctor else 'Add' }} Doctor - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold" style="color: var(--text-primary);">{{ 'Edit' if doctor else 'Add' }} Doctor</h3>
+        <p class="mb-0" style="color: var(--text-muted);">Doctor Management</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('admin.list_doctors') }}" class="glass-btn-glass">
+            <i class="fas fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="glass-card-header">
+        <div class="glass-card-title">{{ 'Edit' if doctor else 'Add' }} Doctor</div>
+        <div class="glass-card-subtitle">Fill in the doctor details below</div>
+    </div>
+    <form method="POST">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" style="color: var(--text-primary); font-weight: 500;">Name *</label>
+                <input type="text" name="name" class="glass-input" required value="{{ doctor.name if doctor else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" style="color: var(--text-primary); font-weight: 500;">Specialization *</label>
+                <input type="text" name="specialization" class="glass-input" required value="{{ doctor.specialization if doctor else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" style="color: var(--text-primary); font-weight: 500;">Qualification *</label>
+                <input type="text" name="qualification" class="glass-input" required value="{{ doctor.qualification if doctor else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" style="color: var(--text-primary); font-weight: 500;">Experience (Years) *</label>
+                <input type="number" name="experience" class="glass-input" required value="{{ doctor.experience if doctor else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" style="color: var(--text-primary); font-weight: 500;">Phone *</label>
+                <input type="tel" name="phone" class="glass-input" required value="{{ doctor.phone if doctor else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" style="color: var(--text-primary); font-weight: 500;">Email *</label>
+                <input type="email" name="email" class="glass-input" required value="{{ doctor.email if doctor else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" style="color: var(--text-primary); font-weight: 500;">Department *</label>
+                <select name="department_id" class="glass-select" required>
+                    <option value="">Select Department</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {{ 'selected' if doctor and doctor.department_id == dept.id else '' }}>{{ dept.department_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" style="color: var(--text-primary); font-weight: 500;">Image URL</label>
+                <input type="text" name="image" class="glass-input" value="{{ doctor.image if doctor else '' }}">
+            </div>
+            <div class="col-12">
+                <div class="form-check">
+                    <input type="checkbox" name="availability" class="form-check-input" id="availability" {{ 'checked' if doctor and doctor.availability else 'checked' }}>
+                    <label class="form-check-label" for="availability" style="color: var(--text-secondary);">Available for appointments</label>
+                </div>
+            </div>
+            <div class="col-12">
+                <label class="form-label" style="color: var(--text-primary); font-weight: 500;">Doctor Bio</label>
+                <textarea name="bio" class="glass-textarea" rows="4">{{ doctor.bio if doctor else '' }}</textarea>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="glass-btn-primary">
+                    <i class="fas fa-save me-2"></i>{{ 'Update' if doctor else 'Add' }} Doctor
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

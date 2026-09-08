@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sahara Hospital - Premium Healthcare{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNavbar">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home.index') }}">
+                <i class="fas fa-hospital text-primary me-2"></i>
+                <span class="fw-bold">Sahara</span> Hospital
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'home.index' %}active{% endif %}" href="{{ url_for('home.index') }}">Home</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'home.about' %}active{% endif %}" href="{{ url_for('home.about') }}">About</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'departments.index' %}active{% endif %}" href="{{ url_for('departments.index') }}">Departments</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'doctors.index' %}active{% endif %}" href="{{ url_for('doctors.index') }}">Doctors</a>
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        {% if session.get('role') == 'staff'
+                        or session.get('role') == 'doctor'
+                        or session.get('role') == 'superadmin'
+                        or session.get('admin_id') %}
+
+                            <a class="nav-link {% if request.endpoint == 'opd.staff_panel' %}active{% endif %}" href="{{ url_for('opd.staff_panel') }}">
+                                OPD
+                            </a>
+
+                        {% else %}
+
+                            <a class="nav-link {% if request.endpoint == 'opd.patient_token' %}active{% endif %}" href="{{ url_for('opd.patient_token') }}">
+                                OPD
+                            </a>
+
+                        {% endif %}
+
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link btn-emergency" href="{{ url_for('emergency.index') }}">
+                            <i class="fas fa-ambulance me-1"></i>
+                            Emergency
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'contact.index' %}active{% endif %}" href="{{ url_for('contact.index') }}">Contact</a>
+                    </li>
+
+                    {% if session.get('patient_id') %}
+
+                    <li class="nav-item">
+
+                        {% if session.get('role') == 'doctor' %}
+
+                            <a class="nav-link"
+                            href="{{ url_for('doctors.doctor_dashboard') }}">
+
+                                <i class="fas fa-user-md me-1"></i>
+                                Doctor Dashboard
+
+                            </a>
+
+                        {% elif session.get('role') == 'staff' %}
+
+                            <a class="nav-link"
+                            href="{{ url_for('staff.staff_dashboard') }}">
+
+                                <i class="fas fa-user-nurse me-1"></i>
+                                Staff Dashboard
+
+                            </a>
+
+                        {% elif session.get('admin_id') %}
+
+                            <a class="nav-link"
+                            href="{{ url_for('auth.admin_dashboard') }}">
+
+                                <i class="fas fa-user-shield me-1"></i>
+                                Admin Dashboard
+
+                            </a>
+
+                        {% else %}
+
+                            <a class="nav-link"
+                            href="{{ url_for('auth.patient_dashboard') }}">
+
+                                <i class="fas fa-user me-1"></i>
+                                Dashboard
+
+                            </a>
+
+                        {% endif %}
+
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i>
+                            Logout
+                        </a>
+                    </li>
+
+                    {% elif session.get('admin_id') %}
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.admin_dashboard') }}">
+                            <i class="fas fa-cog me-1"></i>
+                            Admin Dashboard
+                        </a>
+                    </li>
+
+
+
+
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i>
+                            Logout
+                        </a>
+                    </li>
+
+                    {% else %}
+
+                    <!-- Patient Login -->
+                    
+
+
+
+                    <!-- Register -->
+                    
+
+
+                
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'auth.login' %}active{% endif %}" href="{{ url_for('auth.login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'auth.register' %}active{% endif %}" href="{{ url_for('auth.register') }}">
+                            <i class="fas fa-user-plus me-1"></i> Register
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+<!-- Footer -->
+{% if request.path != '/admin/login' %}
+
+    {% if request.path.startswith('/inventory')
+    or request.path.startswith('/mrd')
+    or request.path.startswith('/admin')
+    or request.path.startswith('/opd/') %}
+
+    <footer class="footer admin-footer">
+
+    {% else %}
+
+    <footer class="footer">
+
+    {% endif %}
+
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-brand">
+                        <i class="fas fa-hospital text-primary me-2"></i>
+                        <span class="fw-bold">Sahara</span> Hospital
+                    </div>
+                    <p class="mt-3">
+                        Providing world-class healthcare services with compassion and excellence.
+                        Your health is our priority.
+                    </p>
+
+                    <div class="social-links mt-3">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <h5 class="footer-title">Quick Links</h5>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('home.index') }}">Home</a></li>
+                        <li><a href="{{ url_for('home.about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('departments.index') }}">Departments</a></li>
+                        <li><a href="{{ url_for('doctors.index') }}">Doctors</a></li>
+                        <li><a href="{{ url_for('contact.index') }}">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="footer-title">Departments</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Cardiology</a></li>
+                        <li><a href="#">Neurology</a></li>
+                        <li><a href="#">Orthopedics</a></li>
+                        <li><a href="#">Pediatrics</a></li>
+                        <li><a href="#">Oncology</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="footer-title">Contact Info</h5>
+                    <ul class="footer-contact">
+                        <li><i class="fas fa-map-marker-alt me-2"></i>123 Healthcare Avenue, Medical City</li>
+                        <li><i class="fas fa-phone me-2"></i>+1 234 567 8900</li>
+                        <li><i class="fas fa-envelope me-2"></i>info@saharahospital.com</li>
+                        <li><i class="fas fa-clock me-2"></i>24/7 Emergency Service</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom mt-4 pt-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-0">&copy; 2024 Sahara Hospital. All rights reserved.</p>
+                    </div>
+
+                    <div class="col-md-6 text-md-end">
+                        <a href="#" class="me-3">Privacy Policy</a>
+                        <a href="#">Terms of Service</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </footer>
+
+{% endif %}
+
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/cursor.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/smooth-scroll.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

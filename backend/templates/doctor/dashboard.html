@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Sahara Hospital</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/doctor_dashboard.css') }}">
+</head>
+<body>
+    <!-- Sticky Header -->
+    <header class="doctor-header">
+        <div class="header-left">
+            <a href="{{ url_for('doctors.doctor_dashboard') }}" class="header-logo">
+                <i class="fas fa-hospital"></i>
+                <span>Sahara Hospital</span>
+            </a>
+        </div>
+        
+        <div class="header-center">
+            Doctor Dashboard
+        </div>
+        
+        <div class="header-right">
+            <button class="header-btn" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="badge">3</span>
+            </button>
+            
+            <div class="profile-dropdown">
+                <div class="profile-avatar">
+                    {{ session.get('doctor_name', 'D')[0].upper() }}
+                </div>
+                <div class="profile-info">
+                    <span class="profile-name">{{ session.get('doctor_name', 'Doctor') }}</span>
+                    <span class="profile-role">Doctor</span>
+                </div>
+            </div>
+            
+            <a href="{{ url_for('auth.logout') }}" class="header-btn" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="doctor-main">
+        <!-- Alert Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show mb-4" role="alert">
+                        <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'error' or category == 'danger' %}exclamation-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Welcome Section -->
+        <section class="welcome-section fade-up">
+            <div class="welcome-left">
+                <h1 class="welcome-title">Welcome Dr. {{ session.get('doctor_name', 'Doctor') }}</h1>
+                <p class="welcome-subtitle">Manage your patients and appointments efficiently</p>
+                <div class="welcome-details">
+                    <div class="welcome-detail">
+                        <i class="fas fa-stethoscope"></i>
+                        <span>Specialist</span>
+                    </div>
+                    <div class="welcome-detail">
+                        <i class="fas fa-building"></i>
+                        <span>Department</span>
+                    </div>
+                    <div class="welcome-detail">
+                        <i class="fas fa-calendar"></i>
+                        <span>{{ today_date }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="welcome-right">
+                <div class="welcome-illustration">
+                    <i class="fas fa-user-doctor"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics Section -->
+        <section class="mb-4">
+            <h2 class="section-title fade-up">
+                <i class="fas fa-chart-bar"></i>
+                Today's Overview
+            </h2>
+            <div class="stats-grid">
+                <div class="stat-card fade-up">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-label">Today's Appointments</div>
+                    <div class="stat-value">{{ total_appointments }}</div>
+                </div>
+                <div class="stat-card fade-up">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-label">Waiting Patients</div>
+                    <div class="stat-value">{{ pending_queue }}</div>
+                </div>
+                <div class="stat-card fade-up">
+                    <div class="stat-icon green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-label">Completed Consultations</div>
+                    <div class="stat-value">{{ appointments|selectattr('status', 'equalto', 'completed')|list|length }}</div>
+                </div>
+                <div class="stat-card fade-up">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-label">Total Patients</div>
+                    <div class="stat-value">{{ total_patients }}</div>
+                </div>
+                <div class="stat-card fade-up">
+                    <div class="stat-icon cyan">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <div class="stat-label">Pending Reports</div>
+                    <div class="stat-value">5</div>
+                </div>
+                <div class="stat-card fade-up">
+                    <div class="stat-icon red">
+                        <i class="fas fa-ambulance"></i>
+                    </div>
+                    <div class="stat-label">Emergency Cases</div>
+                    <div class="stat-value">2</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="mb-4">
+            <h2 class="section-title fade-up">
+                <i class="fas fa-bolt"></i>
+                Quick Actions
+            </h2>
+            <div class="quick-actions-grid">
+                <a href="#" class="action-card card-reveal">
+                    <div class="action-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h3 class="action-title">Patient Records</h3>
+                    <p class="action-description">Access and manage patient medical records and history</p>
+                </a>
+                <a href="{{ url_for('doctors.all_appointments') }}" class="action-card card-reveal">
+                    <div class="action-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="action-title">OPD Queue</h3>
+                    <p class="action-description">View and manage outpatient department queue</p>
+                </a>
+                <a href="{{ url_for('doctors.all_appointments') }}" class="action-card card-reveal">
+                    <div class="action-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3 class="action-title">Appointments</h3>
+                    <p class="action-description">View all scheduled and past appointments</p>
+                </a>
+                <a href="#" class="action-card card-reveal">
+                    <div class="action-icon">
+                        <i class="fas fa-prescription"></i>
+                    </div>
+                    <h3 class="action-title">Prescriptions</h3>
+                    <p class="action-description">Create and manage patient prescriptions</p>
+                </a>
+                <a href="#" class="action-card card-reveal">
+                    <div class="action-icon">
+                        <i class="fas fa-file-medical-alt"></i>
+                    </div>
+                    <h3 class="action-title">Medical Reports</h3>
+                    <p class="action-description">Access patient medical reports and documents</p>
+                </a>
+                <a href="#" class="action-card card-reveal">
+                    <div class="action-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <h3 class="action-title">Lab Results</h3>
+                    <p class="action-description">View laboratory test results for patients</p>
+                </a>
+                <a href="#" class="action-card card-reveal">
+                    <div class="action-icon">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                    <h3 class="action-title">My Schedule</h3>
+                    <p class="action-description">View and manage your weekly schedule</p>
+                </a>
+                <a href="{{ url_for('emergency.index') }}" class="action-card card-reveal">
+                    <div class="action-icon">
+                        <i class="fas fa-ambulance"></i>
+                    </div>
+                    <h3 class="action-title">Emergency Cases</h3>
+                    <p class="action-description">Handle emergency cases and critical situations</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Patient Queue -->
+        <section class="mb-4">
+            <h2 class="section-title fade-up">
+                <i class="fas fa-users"></i>
+                Patient Queue
+            </h2>
+            <div class="queue-grid">
+                <div class="queue-card scale-in">
+                    <div class="queue-icon">
+                        <i class="fas fa-ticket"></i>
+                    </div>
+                    <div class="queue-label">Current Token</div>
+                    <div class="queue-value">{{ pending_queue }}</div>
+                    <div class="queue-sub">Now Serving</div>
+                </div>
+                <div class="queue-card scale-in">
+                    <div class="queue-icon">
+                        <i class="fas fa-forward"></i>
+                    </div>
+                    <div class="queue-label">Next Token</div>
+                    <div class="queue-value">{{ pending_queue + 1 if pending_queue else 1 }}</div>
+                    <div class="queue-sub">Up Next</div>
+                </div>
+                <div class="queue-card scale-in">
+                    <div class="queue-icon">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div class="queue-label">Waiting</div>
+                    <div class="queue-value">{{ pending_queue - 1 if pending_queue > 1 else 0 }}</div>
+                    <div class="queue-sub">In Queue</div>
+                </div>
+                <div class="queue-card scale-in">
+                    <div class="queue-icon">
+                        <i class="fas fa-stopwatch"></i>
+                    </div>
+                    <div class="queue-label">Avg Wait Time</div>
+                    <div class="queue-value">15</div>
+                    <div class="queue-sub">Minutes</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Today's Appointments Table -->
+        <section class="mb-4">
+            <h2 class="section-title fade-up">
+                <i class="fas fa-calendar-day"></i>
+                Today's Appointments
+            </h2>
+            <div class="table-container fade-up">
+                <div class="table-responsive">
+                    <table class="doctor-table">
+                        <thead>
+                            <tr>
+                                <th>Token</th>
+                                <th>Patient Name</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments[:10] %}
+                            <tr>
+                                <td>#{{ loop.index }}</td>
+                                <td>{{ appointment.patient.full_name if appointment.patient else 'N/A' }}</td>
+                                <td>{{ appointment.patient.age if appointment.patient else 'N/A' }}</td>
+                                <td>{{ appointment.patient.gender if appointment.patient else 'N/A' }}</td>
+                                <td>{{ appointment.appointment_time.strftime('%I:%M %p') if appointment.appointment_time else 'N/A' }}</td>
+                                <td>
+                                    <span class="status-badge {{ appointment.status }}">
+                                        {{ appointment.status|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('doctors.view_appointment', appointment_id=appointment.id) }}" class="action-btn">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No appointments scheduled for today</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Patients -->
+        <section class="mb-4">
+            <h2 class="section-title fade-up">
+                <i class="fas fa-history"></i>
+                Recent Patients
+            </h2>
+            <div class="patients-grid">
+                {% for appointment in appointments[:6] %}
+                {% if appointment.patient %}
+                <div class="patient-card card-reveal">
+                    <div class="patient-header">
+                        <div class="patient-avatar">
+                            {{ appointment.patient.full_name[0]|upper if appointment.patient.full_name else 'P' }}
+                        </div>
+                        <div class="patient-info">
+                            <h4>{{ appointment.patient.full_name }}</h4>
+                            <p>Patient ID: #{{ appointment.patient.id }}</p>
+                        </div>
+                    </div>
+                    <div class="patient-details">
+                        <div class="patient-detail">
+                            <span>Age:</span> {{ appointment.patient.age }}
+                        </div>
+                        <div class="patient-detail">
+                            <span>Gender:</span> {{ appointment.patient.gender }}
+                        </div>
+                        <div class="patient-detail">
+                            <span>Last Visit:</span> {{ appointment.appointment_date.strftime('%b %d') if appointment.appointment_date else 'N/A' }}
+                        </div>
+                    </div>
+                    <span class="patient-status">{{ appointment.status|title }}</span>
+                    <div class="patient-footer">
+                        <a href="{{ url_for('doctors.view_appointment', appointment_id=appointment.id) }}" class="action-btn secondary">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="col-12">
+                    <p class="text-center text-muted">No recent patients found</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/doctor_dashboard.js') }}"></script>
+</body>
+</html>

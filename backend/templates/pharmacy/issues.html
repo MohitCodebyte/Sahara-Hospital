@@ -1,0 +1,89 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Patient Medicine Issues - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Patient Medicine Issue Registry</h3>
+        <p class="text-muted mb-0">Record of dispensed prescription and OTC medicines to patients with auto-invoices.</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('pharmacy.new_issue') }}" class="btn btn-success px-3 rounded-pill">
+            <i class="fa-solid fa-truck-dispensary me-1"></i> Issue Medicine
+        </a>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>Issue Date</th>
+                    <th>Billing Invoice No.</th>
+                    <th>Patient Name</th>
+                    <th>Prescription Reference</th>
+                    <th>Dispensed Medicines</th>
+                    <th>Subtotal</th>
+                    <th>GST (18%)</th>
+                    <th>Discount</th>
+                    <th>Total Due</th>
+                    <th>Payment Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for issue in issues %}
+                <tr>
+                    <td><i class="fa-regular fa-calendar me-1 text-muted"></i> {{ issue.issue_date.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="{{ url_for('billing.view_invoice', id=issue.invoice_id) }}" class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill text-decoration-none font-monospace">
+                            {{ issue.invoice.invoice_number if issue.invoice else 'N/A' }}
+                        </a>
+                    </td>
+                    <td class="fw-bold">{{ issue.patient.full_name }}</td>
+                    <td>
+                        {% if issue.prescription_id %}
+                            <span class="text-indigo">Presc #{{ issue.prescription_id }}</span>
+                        {% else %}
+                            <span class="text-muted italic">Direct OTC Issue</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <ul class="list-unstyled mb-0 text-sm">
+                            {% for item in issue.items %}
+                            <li>
+                                <i class="fa-solid fa-pills text-muted me-1"></i>
+                                {{ item.batch.medicine.medicine_name }} <span class="text-muted">(B: {{ item.batch.batch_number }})</span> x{{ item.quantity }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>₹{{ "%.2f"|format(issue.subtotal) }}</td>
+                    <td>₹{{ "%.2f"|format(issue.cgst + issue.sgst) }}</td>
+                    <td class="text-danger">-₹{{ "%.2f"|format(issue.discount) }}</td>
+                    <td class="fw-bold text-dark">₹{{ "%.2f"|format(issue.total_amount) }}</td>
+                    <td>
+                        {% if issue.payment_status == 'paid' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill fw-bold">Paid</span>
+                        {% else %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-1 rounded-pill fw-bold">Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="10" class="text-center text-muted py-4">No patient medicine issues recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .text-indigo { color: #4f46e5; }
+    .bg-primary-subtle { background-color: rgba(79, 70, 229, 0.08); }
+    .border-primary-subtle { border-color: rgba(79, 70, 229, 0.2) !important; }
+</style>
+{% endblock %}

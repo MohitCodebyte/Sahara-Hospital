@@ -1,0 +1,247 @@
+{% extends 'admin/layout.html' %}
+{% block title %}Add New Stock{% endblock %}
+{% block admin_content %}
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Add New Stock (Purchase)</h2>
+    <span class="text-muted">{{ today_date }}</span>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <div class="glass-card">
+        <div class="glass-card-header">
+          <h5 class="glass-card-title">Purchase Entry</h5>
+          <p class="glass-card-subtitle">Enter supplier and item details</p>
+        </div>
+        <form method="POST" enctype="multipart/form-data" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="supplier_id">Supplier</label>
+            <select class="form-select" name="supplier_id" id="supplier_id" required>
+              <option value="" disabled selected>Select supplier</option>
+              {% for sup in suppliers %}
+                <option value="{{ sup.id }}">{{ sup.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="purchase_date">Purchase Date</label>
+            <input type="date" class="form-control" name="purchase_date" id="purchase_date" value="{{ today.strftime('%Y-%m-%d') if today else '' }}" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="challan_pdf">Challan PDF (optional)</label>
+            <input type="file" class="form-control" name="challan_pdf" id="challan_pdf" accept="application/pdf">
+          </div>
+          <hr class="my-4">
+          <h5 class="mb-3">Items</h5>
+          <div class="table-responsive">
+            <table class="table table-custom" id="items-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Rate</th>
+                  <th>CGST %</th>
+                  <th>SGST %</th>
+                  <th>Discount</th>
+                  <th>Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="item-row">
+                  <td>
+                    <select class="form-select item-select" name="item_id[]" required>
+                      <option value="" disabled selected>Select item</option>
+                      {% for itm in items %}
+                        <option value="{{ itm.id }}">{{ itm.item_name }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td><input type="number" class="form-control qty-input" name="quantity[]" min="1" required></td>
+                  <td><input type="number" step="0.01" class="form-control rate-input" name="rate[]" min="0" required></td>
+                  <td><input type="number" step="0.01" class="form-control cgst-input" name="cgst_rate[]" min="0" value="0"></td>
+                  <td><input type="number" step="0.01" class="form-control sgst-input" name="sgst_rate[]" min="0" value="0"></td>
+                  <td><input type="number" step="0.01" class="form-control discount-input" name="discount[]" min="0" value="0"></td>
+                  <td><input type="text" class="form-control row-total" readonly value="₹0.00"></td>
+                  <td><button type="button" class="btn btn-danger btn-sm remove-row">✕</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-12 text-end">
+            <button type="button" class="glass-btn glass-btn-glass" id="add-row">
+              <i class="fa-solid fa-plus me-2"></i>Add Another Item
+            </button>
+          </div>
+          <div class="col-12 text-end mt-4">
+            <button type="submit" class="glass-btn glass-btn-primary">
+              <i class="fa-solid fa-save me-2"></i>Save Purchase
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="glass-card mb-4">
+        <div class="glass-card-header">
+          <h5 class="glass-card-title">Purchase Summary</h5>
+          <p class="glass-card-subtitle">Real-time calculation</p>
+        </div>
+        <div class="p-3">
+          <div class="d-flex justify-content-between mb-3">
+            <span class="text-muted">Subtotal:</span>
+            <span class="fw-bold" id="subtotal">₹0.00</span>
+          </div>
+          <div class="d-flex justify-content-between mb-3">
+            <span class="text-muted">CGST:</span>
+            <span class="fw-bold text-success" id="total-cgst">₹0.00</span>
+          </div>
+          <div class="d-flex justify-content-between mb-3">
+            <span class="text-muted">SGST:</span>
+            <span class="fw-bold text-success" id="total-sgst">₹0.00</span>
+          </div>
+          <div class="d-flex justify-content-between mb-3">
+            <span class="text-muted">Discount:</span>
+            <span class="fw-bold text-danger" id="total-discount">₹0.00</span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between">
+            <span class="fw-bold">Grand Total:</span>
+            <span class="fw-bold text-primary fs-5" id="grand-total">₹0.00</span>
+          </div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="glass-card-header">
+          <h5 class="glass-card-title">Quick Stats</h5>
+        </div>
+        <div class="p-3">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; background: rgba(37, 99, 235, 0.1); color: #2563EB;">
+              <i class="fa-solid fa-box"></i>
+            </div>
+            <div>
+              <div class="text-muted text-sm">Total Items</div>
+              <div class="fw-bold" id="total-items-count">0</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center">
+            <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; background: rgba(34, 197, 94, 0.1); color: #22C55E;">
+              <i class="fa-solid fa-calculator"></i>
+            </div>
+            <div>
+              <div class="text-muted text-sm">Total Quantity</div>
+              <div class="fw-bold" id="total-quantity">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const table = document.getElementById('items-table');
+  const addRowBtn = document.getElementById('add-row');
+  
+  function calculateRow(row) {
+    const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+    const rate = parseFloat(row.querySelector('.rate-input').value) || 0;
+    const cgstRate = parseFloat(row.querySelector('.cgst-input').value) || 0;
+    const sgstRate = parseFloat(row.querySelector('.sgst-input').value) || 0;
+    const discount = parseFloat(row.querySelector('.discount-input').value) || 0;
+    
+    const subtotal = qty * rate;
+    const cgstAmount = subtotal * (cgstRate / 100);
+    const sgstAmount = subtotal * (sgstRate / 100);
+    const total = subtotal + cgstAmount + sgstAmount - discount;
+    
+    row.querySelector('.row-total').value = '₹' + total.toFixed(2);
+    
+    calculateTotals();
+  }
+  
+  function calculateTotals() {
+    let subtotal = 0;
+    let totalCgst = 0;
+    let totalSgst = 0;
+    let totalDiscount = 0;
+    let totalQty = 0;
+    
+    document.querySelectorAll('.item-row').forEach(row => {
+      const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+      const rate = parseFloat(row.querySelector('.rate-input').value) || 0;
+      const cgstRate = parseFloat(row.querySelector('.cgst-input').value) || 0;
+      const sgstRate = parseFloat(row.querySelector('.sgst-input').value) || 0;
+      const discount = parseFloat(row.querySelector('.discount-input').value) || 0;
+      
+      const rowSubtotal = qty * rate;
+      const cgstAmount = rowSubtotal * (cgstRate / 100);
+      const sgstAmount = rowSubtotal * (sgstRate / 100);
+      
+      subtotal += rowSubtotal;
+      totalCgst += cgstAmount;
+      totalSgst += sgstAmount;
+      totalDiscount += discount;
+      totalQty += qty;
+    });
+    
+    document.getElementById('subtotal').textContent = '₹' + subtotal.toFixed(2);
+    document.getElementById('total-cgst').textContent = '₹' + totalCgst.toFixed(2);
+    document.getElementById('total-sgst').textContent = '₹' + totalSgst.toFixed(2);
+    document.getElementById('total-discount').textContent = '₹' + totalDiscount.toFixed(2);
+    document.getElementById('grand-total').textContent = '₹' + (subtotal + totalCgst + totalSgst - totalDiscount).toFixed(2);
+    document.getElementById('total-items-count').textContent = document.querySelectorAll('.item-row').length;
+    document.getElementById('total-quantity').textContent = totalQty;
+  }
+  
+  function addRow() {
+    const tbody = table.querySelector('tbody');
+    const newRow = document.createElement('tr');
+    newRow.className = 'item-row';
+    newRow.innerHTML = `
+      <td>
+        <select class="form-select item-select" name="item_id[]" required>
+          <option value="" disabled selected>Select item</option>
+          {% for itm in items %}
+            <option value="{{ itm.id }}">{{ itm.item_name }}</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td><input type="number" class="form-control qty-input" name="quantity[]" min="1" required></td>
+      <td><input type="number" step="0.01" class="form-control rate-input" name="rate[]" min="0" required></td>
+      <td><input type="number" step="0.01" class="form-control cgst-input" name="cgst_rate[]" min="0" value="0"></td>
+      <td><input type="number" step="0.01" class="form-control sgst-input" name="sgst_rate[]" min="0" value="0"></td>
+      <td><input type="number" step="0.01" class="form-control discount-input" name="discount[]" min="0" value="0"></td>
+      <td><input type="text" class="form-control row-total" readonly value="₹0.00"></td>
+      <td><button type="button" class="btn btn-danger btn-sm remove-row">✕</button></td>
+    `;
+    tbody.appendChild(newRow);
+    
+    newRow.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', () => calculateRow(newRow));
+    });
+    
+    newRow.querySelector('.remove-row').addEventListener('click', function() {
+      newRow.remove();
+      calculateTotals();
+    });
+  }
+  
+  table.querySelectorAll('.item-row').forEach(row => {
+    row.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', () => calculateRow(row));
+    });
+    
+    row.querySelector('.remove-row').addEventListener('click', function() {
+      row.remove();
+      calculateTotals();
+    });
+  });
+  
+  addRowBtn.addEventListener('click', addRow);
+});
+</script>
+{% endblock %}

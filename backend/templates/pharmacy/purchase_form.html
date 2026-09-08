@@ -1,0 +1,286 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Record Supplier Purchase - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Record Supplier Purchase Invoice</h3>
+        <p class="text-muted mb-0">Procure stock from pharmaceutical vendors, generate batches, and log purchase bills.</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('pharmacy.purchases') }}" class="btn btn-outline-secondary px-3 rounded-pill">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to History
+        </a>
+    </div>
+</div>
+
+<div class="glass-card">
+    <form method="POST" id="purchaseForm">
+        <!-- Billing Master Metadata -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label for="supplier_id" class="form-label fw-semibold">Supplier Name *</label>
+                <select class="form-select rounded-3" id="supplier_id" name="supplier_id" required>
+                    <option value="" disabled selected>Select Supplier</option>
+                    {% for supplier in suppliers %}
+                    <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="invoice_number" class="form-label fw-semibold">Vendor Invoice Number *</label>
+                <input type="text" class="form-control rounded-3" id="invoice_number" name="invoice_number" required placeholder="e.g. TAX-2024-890">
+            </div>
+            <div class="col-md-4">
+                <label for="purchase_date" class="form-label fw-semibold">Purchase Date *</label>
+                <input type="date" class="form-control rounded-3" id="purchase_date" name="purchase_date" required value="{{ date_today }}">
+            </div>
+        </div>
+
+        <h5 class="fw-bold mb-3 border-bottom pb-2 text-primary">Invoice Medicine Items</h5>
+        
+        <!-- Multi-item table -->
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered align-middle" id="itemsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 25%;">Medicine *</th>
+                        <th style="width: 15%;">Batch No. *</th>
+                        <th style="width: 15%;">Expiry Date *</th>
+                        <th style="width: 10%;">Qty *</th>
+                        <th style="width: 12%;">Pur. Price *</th>
+                        <th style="width: 12%;">Sale Price *</th>
+                        <th style="width: 11%;">Total</th>
+                        <th style="width: 5%;"></th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody">
+                    <tr class="item-row">
+                        <td>
+                            <select class="form-select rounded-3" name="medicine_id[]" required>
+                                <option value="" disabled selected>Select Medicine</option>
+                                {% for med in medicines %}
+                                <option value="{{ med.id }}">{{ med.medicine_name }} ({{ med.unit }})</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control rounded-3 font-monospace" name="batch_number[]" required placeholder="Batch Code">
+                        </td>
+                        <td>
+                            <input type="date" class="form-control rounded-3" name="expiry_date[]" required>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control rounded-3 qty-input" name="quantity[]" min="1" required value="10">
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" step="0.01" class="form-control rounded-3 pur-price-input" name="purchase_price[]" min="0" required placeholder="Rate">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" step="0.01" class="form-control rounded-3" name="sale_price[]" min="0" required placeholder="MRP">
+                            </div>
+                        </td>
+                        <td>
+                            <span class="row-total fw-bold text-dark">₹0.00</span>
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-circle remove-row-btn"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button type="button" class="btn btn-outline-indigo px-3 rounded-pill mb-4" id="addRowBtn">
+            <i class="fa-solid fa-plus me-1"></i> Add Another Medicine
+        </button>
+
+        <!-- Calculations -->
+        <div class="row justify-content-end">
+            <div class="col-md-5">
+                <div class="glass-card p-3" style="background: rgba(255, 255, 255, 0.65);">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Subtotal:</span>
+                        <span class="fw-bold" id="subtotalVal">₹0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">CGST (9%):</span>
+                        <span class="fw-semibold" id="cgstVal">₹0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">SGST (9%):</span>
+                        <span class="fw-semibold" id="sgstVal">₹0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Discount Applied:</span>
+                        <div class="input-group" style="width: 150px;">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" step="0.01" class="form-control" id="discount" name="discount" value="0.00" min="0">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fs-5 fw-bold text-dark">Net Payable:</span>
+                        <span class="fs-4 fw-bold text-success" id="totalVal">₹0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end gap-2">
+            <a href="{{ url_for('pharmacy.purchases') }}" class="btn btn-outline-secondary px-4 rounded-pill">Cancel</a>
+            <button type="submit" class="btn btn-primary px-4 rounded-pill">
+                <i class="fa-solid fa-file-invoice-dollar me-1"></i> Record & Commit Stock
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Template for cloning rows -->
+<table style="display: none;">
+    <tbody id="rowTemplate">
+        <tr class="item-row">
+            <td>
+                <select class="form-select rounded-3" name="medicine_id[]" required>
+                    <option value="" disabled selected>Select Medicine</option>
+                    {% for med in medicines %}
+                    <option value="{{ med.id }}">{{ med.medicine_name }} ({{ med.unit }})</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <input type="text" class="form-control rounded-3 font-monospace" name="batch_number[]" required placeholder="Batch Code">
+            </td>
+            <td>
+                <input type="date" class="form-control rounded-3" name="expiry_date[]" required>
+            </td>
+            <td>
+                <input type="number" class="form-control rounded-3 qty-input" name="quantity[]" min="1" required value="10">
+            </td>
+            <td>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" step="0.01" class="form-control rounded-3 pur-price-input" name="purchase_price[]" min="0" required placeholder="Rate">
+                </div>
+            </td>
+            <td>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" step="0.01" class="form-control rounded-3" name="sale_price[]" min="0" required placeholder="MRP">
+                </div>
+            </td>
+            <td>
+                <span class="row-total fw-bold text-dark">₹0.00</span>
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle remove-row-btn"><i class="fa-solid fa-trash-can"></i></button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set today's date in date picker if empty
+        const dateInput = document.getElementById('purchase_date');
+        if (!dateInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+        }
+
+        const itemsBody = document.getElementById('itemsBody');
+        const addRowBtn = document.getElementById('addRowBtn');
+        const rowTemplate = document.getElementById('rowTemplate').querySelector('tr');
+        const discountInput = document.getElementById('discount');
+
+        // Add dynamic row
+        addRowBtn.addEventListener('click', function() {
+            const newRow = rowTemplate.cloneNode(true);
+            itemsBody.appendChild(newRow);
+            bindRowEvents(newRow);
+            calculateTotals();
+        });
+
+        // Remove row
+        itemsBody.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-row-btn')) {
+                const row = e.target.closest('.item-row');
+                if (itemsBody.querySelectorAll('.item-row').length > 1) {
+                    row.remove();
+                    calculateTotals();
+                } else {
+                    alert("At least one medicine item is required!");
+                }
+            }
+        });
+
+        // Event listener for discount changes
+        discountInput.addEventListener('input', calculateTotals);
+
+        // Bind events to initial row(s)
+        itemsBody.querySelectorAll('.item-row').forEach(bindRowEvents);
+
+        function bindRowEvents(row) {
+            const qtyInput = row.querySelector('.qty-input');
+            const purPriceInput = row.querySelector('.pur-price-input');
+            
+            qtyInput.addEventListener('input', () => {
+                updateRowTotal(row);
+                calculateTotals();
+            });
+            
+            purPriceInput.addEventListener('input', () => {
+                updateRowTotal(row);
+                calculateTotals();
+            });
+        }
+
+        function updateRowTotal(row) {
+            const qty = parseInt(row.querySelector('.qty-input').value) || 0;
+            const price = parseFloat(row.querySelector('.pur-price-input').value) || 0;
+            const rowTotalSpan = row.querySelector('.row-total');
+            const total = qty * price;
+            rowTotalSpan.textContent = '₹' + total.toFixed(2);
+            return total;
+        }
+
+        function calculateTotals() {
+            let subtotal = 0;
+            itemsBody.querySelectorAll('.item-row').forEach(row => {
+                const qty = parseInt(row.querySelector('.qty-input').value) || 0;
+                const price = parseFloat(row.querySelector('.pur-price-input').value) || 0;
+                subtotal += qty * price;
+            });
+
+            const cgst = subtotal * 0.09;
+            const sgst = subtotal * 0.09;
+            const discount = parseFloat(discountInput.value) || 0;
+            const total = subtotal + cgst + sgst - discount;
+
+            document.getElementById('subtotalVal').textContent = '₹' + subtotal.toFixed(2);
+            document.getElementById('cgstVal').textContent = '₹' + cgst.toFixed(2);
+            document.getElementById('sgstVal').textContent = '₹' + sgst.toFixed(2);
+            document.getElementById('totalVal').textContent = '₹' + Math.max(0, total).toFixed(2);
+        }
+    });
+</script>
+<style>
+    .btn-outline-indigo {
+        color: #4f46e5;
+        border-color: #4f46e5;
+    }
+    .btn-outline-indigo:hover {
+        background-color: #4f46e5;
+        color: #fff;
+    }
+</style>
+{% endblock %}

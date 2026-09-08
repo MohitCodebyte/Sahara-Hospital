@@ -1,0 +1,111 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}View Prescription - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">Prescription #{{ prescription.id }}</h3>
+        <p class="text-muted mb-0">View prescription details</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('prescriptions.download_pdf', prescription_id=prescription.id) }}" class="btn btn-outline-primary">
+            <i class="fas fa-download me-2"></i>Download PDF
+        </a>
+        <a href="{{ url_for('prescriptions.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back
+        </a>
+    </div>
+</div>
+
+        <div class="glass-card animate-on-scroll fade-in-up">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h5 class="mb-3">Patient Details</h5>
+                    <p><strong>Name:</strong> {{ prescription.patient.full_name }}</p>
+                    <p><strong>Age:</strong> {{ prescription.patient.age }}</p>
+                    <p><strong>Gender:</strong> {{ prescription.patient.gender }}</p>
+                    <p><strong>Phone:</strong> {{ prescription.patient.phone }}</p>
+                </div>
+                <div class="col-lg-4">
+                    <h5 class="mb-3">Doctor Details</h5>
+                    <p><strong>Doctor:</strong> {{ prescription.doctor.name }}</p>
+                    <p><strong>Specialization:</strong> {{ prescription.doctor.specialization }}</p>
+                    <p><strong>Date:</strong> {{ prescription.prescription_date.strftime('%Y-%m-%d') }}</p>
+                </div>
+                <div class="col-lg-4">
+                    <h5 class="mb-3">Diagnosis</h5>
+                    <p>{{ prescription.diagnosis }}</p>
+                    {% if prescription.notes %}
+                    <p><strong>Notes:</strong> {{ prescription.notes }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <h5 class="mb-3">Medicines</h5>
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Dosage</th>
+                            <th>Frequency</th>
+                            <th>Duration</th>
+                            <th>Instructions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for medicine in prescription.medicines %}
+                        <tr>
+                            <td>{{ medicine.medicine_name }}</td>
+                            <td>{{ medicine.dosage }}</td>
+                            <td>{{ medicine.frequency }}</td>
+                            <td>{{ medicine.duration }}</td>
+                            <td>{{ medicine.instructions or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-on-scroll {
+    opacity: 0;
+}
+
+.animate-on-scroll.animated {
+    animation: fade-in-up 0.5s ease-out forwards;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+            }
+        });
+    }, { threshold: 0.1 });
+    animatedElements.forEach(el => observer.observe(el));
+});
+</script>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends 'admin/layout.html' %}
+{% block title %}Billing Dashboard{% endblock %}
+{% block admin_content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Billing Dashboard</h2>
+        <span class="text-muted">{{ today_date }}</span>
+    </div>
+
+    <!-- KPI Cards with Animated Counters -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <div class="glass-stat-icon glass-stat-icon-primary mb-3">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                </div>
+                <h5 class="card-title">Today's Revenue</h5>
+                <p class="glass-stat-value text-primary" data-counter="{{ today_revenue }}" data-prefix="₹" data-duration="1500">₹0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +12% from yesterday</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <div class="glass-stat-icon glass-stat-icon-success mb-3">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <h5 class="card-title">Monthly Revenue</h5>
+                <p class="glass-stat-value text-success" data-counter="{{ monthly_revenue }}" data-prefix="₹" data-duration="1500">₹0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +8% from last month</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <div class="glass-stat-icon glass-stat-icon-warning mb-3">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <h5 class="card-title">Pending Bills</h5>
+                <p class="glass-stat-value text-warning" data-counter="{{ pending }}" data-duration="1000">0</p>
+                <p class="glass-stat-change negative"><i class="fa-solid fa-arrow-down"></i> -5% from yesterday</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <div class="glass-stat-icon glass-stat-icon-info mb-3">
+                    <i class="fa-solid fa-check-circle"></i>
+                </div>
+                <h5 class="card-title">Paid Bills</h5>
+                <p class="glass-stat-value text-info" data-counter="{{ paid }}" data-duration="1000">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +15% from yesterday</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary KPI Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <div class="glass-stat-icon glass-stat-icon-primary mb-3">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <h5 class="card-title">Total Revenue</h5>
+                <p class="glass-stat-value text-primary" data-counter="{{ total_revenue }}" data-prefix="₹" data-duration="2000">₹0</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <div class="glass-stat-icon glass-stat-icon-danger mb-3">
+                    <i class="fa-solid fa-exclamation-triangle"></i>
+                </div>
+                <h5 class="card-title">Outstanding</h5>
+                <p class="glass-stat-value text-danger" data-counter="{{ outstanding }}" data-prefix="₹" data-duration="2000">₹0</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <div class="glass-stat-icon glass-stat-icon-success mb-3">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <h5 class="card-title">Cash Revenue</h5>
+                <p class="glass-stat-value text-success" data-counter="{{ cash_revenue }}" data-prefix="₹" data-duration="1500">₹0</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <div class="glass-stat-icon glass-stat-icon-info mb-3">
+                    <i class="fa-solid fa-credit-card"></i>
+                </div>
+                <h5 class="card-title">Online Revenue</h5>
+                <p class="glass-stat-value text-info" data-counter="{{ online_revenue }}" data-prefix="₹" data-duration="1500">₹0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Revenue Trend</h5>
+                    <p class="glass-card-subtitle">Monthly revenue over last 6 months</p>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Payment Methods</h5>
+                    <p class="glass-card-subtitle">Distribution by payment type</p>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="paymentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="glass-card mb-4">
+        <div class="glass-card-header">
+            <h5 class="glass-card-title">Quick Actions</h5>
+            <p class="glass-card-subtitle">Frequently used billing operations</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('billing.create_invoice') }}" class="glass-btn glass-btn-primary">
+                <i class="fa-solid fa-plus"></i> Create Invoice
+            </a>
+            <a href="{{ url_for('billing.opd_bill') }}" class="glass-btn glass-btn-glass">
+                <i class="fa-solid fa-file-invoice"></i> Generate OPD Bill
+            </a>
+            <a href="{{ url_for('billing.ipd_bill') }}" class="glass-btn glass-btn-glass">
+                <i class="fa-solid fa-bed"></i> Generate IPD Bill
+            </a>
+            <a href="{{ url_for('billing.payment_collection') }}" class="glass-btn glass-btn-success">
+                <i class="fa-solid fa-money-bill-wave"></i> Payment Collection
+            </a>
+            <a href="#" class="glass-btn glass-btn-glass">
+                <i class="fa-solid fa-print"></i> Print Receipt
+            </a>
+            <a href="{{ url_for('billing.reports') }}" class="glass-btn glass-btn-glass">
+                <i class="fa-solid fa-chart-bar"></i> Billing Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Invoices Table -->
+    <div class="glass-card">
+        <div class="glass-card-header">
+            <h5 class="glass-card-title">Recent Invoices</h5>
+            <a href="#" class="glass-btn glass-btn-sm glass-btn-outline">View All</a>
+        </div>
+        <div class="glass-table-container">
+            <table class="glass-table">
+                <thead>
+                    <tr>
+                        <th>Invoice No</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Department</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Created Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if invoices %}
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td><strong>{{ invoice.invoice_number }}</strong></td>
+                            <td>{{ invoice.patient.full_name if invoice.patient else 'N/A' }}</td>
+                            <td>{{ invoice.appointment.doctor.full_name if invoice.appointment and invoice.appointment.doctor else 'N/A' }}</td>
+                            <td>{{ invoice.appointment.department.department_name if invoice.appointment and invoice.appointment.department else 'N/A' }}</td>
+                            <td>₹{{ "%.2f"|format(invoice.total_amount) }}</td>
+                            <td>
+                                {% if invoice.payment_status == 'paid' %}
+                                    <span class="glass-badge glass-badge-success">Paid</span>
+                                {% elif invoice.payment_status == 'pending' %}
+                                    <span class="glass-badge glass-badge-warning">Pending</span>
+                                {% else %}
+                                    <span class="glass-badge glass-badge-info">{{ invoice.payment_status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ invoice.invoice_date.strftime('%Y-%m-%d') if invoice.invoice_date else 'N/A' }}</td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a href="{{ url_for('billing.view_invoice', invoice_id=invoice.id) }}" class="glass-btn glass-btn-sm glass-btn-glass">View</a>
+                                    <a href="{{ url_for('billing.print_invoice', invoice_id=invoice.id) }}" class="glass-btn glass-btn-sm glass-btn-glass">Print</a>
+                                    {% if invoice.payment_status == 'pending' %}
+                                        <form method="POST" action="{{ url_for('billing.pay_invoice', invoice_id=invoice.id) }}" style="display:inline;">
+                                            <button type="submit" class="glass-btn glass-btn-sm glass-btn-success">Mark Paid</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="fa-solid fa-file-invoice-dollar fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">No invoices found.</p>
+                                <small class="text-muted">Create your first invoice to get started.</small>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard-utils.js') }}"></script>
+{% endblock %}
+{% endblock %}

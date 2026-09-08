@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}
+Doctor Patients
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="glass-card p-4">
+
+        <h2 class="mb-4">
+            My Patients
+        </h2>
+
+        <div class="table-responsive">
+
+            <table class="table table-custom">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Token</th>
+                        <th>Patient</th>
+                        <th>Symptoms</th>
+                        <th>Status</th>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for visit in patients %}
+
+                    <tr>
+
+                        <td>
+                            {{ visit.token_number }}
+                        </td>
+
+                        <td>
+                            {{ visit.patient.full_name }}
+                        </td>
+
+                        <td>
+                            {{ visit.chief_complaint }}
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-primary">
+
+                                {{ visit.status }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <a href="{{ url_for(
+                                'opd.consultation',
+                                visit_id=visit.id
+                            ) }}"
+                            class="btn btn-sm btn-primary">
+
+                                Open
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

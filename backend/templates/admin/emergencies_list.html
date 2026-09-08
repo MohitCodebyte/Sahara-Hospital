@@ -1,0 +1,41 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Manage Emergencies - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold" style="color: var(--text-primary);">Emergency Contacts</h3>
+        <p class="mb-0" style="color: var(--text-muted);">Emergency Management</p>
+    </div>
+</div>
+
+<div class="glass-table-container">
+    <table class="glass-table">
+        <thead>
+            <tr>
+                <th>Patient Name</th>
+                <th>Phone</th>
+                <th>Emergency Type</th>
+                <th>Message</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emergency in emergencies %}
+            <tr>
+                <td style="font-weight: 600; color: var(--text-primary);">{{ emergency.patient_name }}</td>
+                <td style="color: var(--text-secondary);">{{ emergency.phone }}</td>
+                <td><span class="glass-badge glass-badge-danger">{{ emergency.emergency_type }}</span></td>
+                <td style="color: var(--text-secondary);">{{ emergency.message[:50] }}...</td>
+                <td style="color: var(--text-secondary);">{{ emergency.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No emergency contacts found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

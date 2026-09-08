@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Doctors - Sahara Hospital{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/doctors.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="doctors-hero">
+    <div class="container">
+        <div class="animate-fade-up">
+            <h1>Our Doctors</h1>
+            <p>Meet our team of experienced and dedicated healthcare professionals</p>
+        </div>
+    </div>
+</section>
+
+<!-- Filter Section -->
+<section class="departments-filter">
+    <div class="container">
+        <div class="row g-3 justify-content-center">
+            <div class="col-md-4">
+                <input type="text" class="form-control" placeholder="Search by name" id="searchDoctor">
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="filterDepartment">
+                    <option value="">All Departments</option>
+                    {% for department in departments %}
+                    <option value="{{ department.id }}">{{ department.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-premium btn-gradient-primary w-100" onclick="filterDoctors()">
+                    <i class="fas fa-search me-2"></i>Search
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Doctors Section -->
+<section class="doctors-section">
+    <div class="container">
+        <div class="row g-4" id="doctorsList" data-animate-stagger>
+            {% for doctor in doctors %}
+            <div class="col-lg-4 col-md-6 doctor-item" data-department="{{ doctor.department_id }}" data-name="{{ doctor.full_name.lower() }}">
+                <div class="doctor-card-premium">
+                    <div class="doctor-image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop" 
+                             alt="{{ doctor.full_name }}">
+                        <div class="doctor-overlay">
+                            <div class="social-links">
+                                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                                <a href="#"><i class="fab fa-twitter"></i></a>
+                                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5>{{ doctor.full_name }}</h5>
+                        <div class="specialization">{{ doctor.specialization }}</div>
+                        <div class="qualification">{{ doctor.qualification }}</div>
+                        <div class="experience">{{ doctor.experience }}+ Years Experience</div>
+                        <div class="mb-3">
+                            <span class="badge-premium badge-experience">Expert</span>
+                            <span class="badge-premium badge-available">Available</span>
+                        </div>
+                        <a href="{{ url_for('appointments.index') }}" class="btn-doctor-cta">
+                            <i class="fas fa-calendar-check me-2"></i>Book Appointment
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterDoctors() {
+    const searchTerm = document.getElementById('searchDoctor').value.toLowerCase();
+    const departmentFilter = document.getElementById('filterDepartment').value;
+    const doctorItems = document.querySelectorAll('.doctor-item');
+    
+    doctorItems.forEach(item => {
+        const doctorName = item.getAttribute('data-name');
+        const doctorDepartment = item.getAttribute('data-department');
+        
+        const matchesSearch = doctorName.includes(searchTerm);
+        const matchesDepartment = !departmentFilter || doctorDepartment === departmentFilter;
+        
+        if (matchesSearch && matchesDepartment) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+document.getElementById('searchDoctor').addEventListener('input', filterDoctors);
+document.getElementById('filterDepartment').addEventListener('change', filterDoctors);
+</script>
+{% endblock %}

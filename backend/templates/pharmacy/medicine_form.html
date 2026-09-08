@@ -1,0 +1,80 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ action }} Medicine - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold text-dark">{{ action }} Medicine</h3>
+        <p class="text-muted mb-0">Record or edit medicine master details inside the pharmacy registry.</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('pharmacy.medicines') }}" class="btn btn-outline-secondary px-3 rounded-pill">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Catalog
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="glass-card">
+            <form method="POST" action="">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="medicine_name" class="form-label fw-semibold">Medicine Name *</label>
+                        <input type="text" class="form-control rounded-3" id="medicine_name" name="medicine_name" 
+                               value="{{ medicine.medicine_name if medicine else '' }}" required placeholder="e.g. Paracetamol 650mg">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="category" class="form-label fw-semibold">Category *</label>
+                        <input type="text" class="form-control rounded-3" id="category" name="category" 
+                               value="{{ medicine.category if medicine else '' }}" required placeholder="e.g. Analgesics, Antibiotic">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="dosage_form" class="form-label fw-semibold">Dosage Form *</label>
+                        <select class="form-select rounded-3" id="dosage_form" name="dosage_form" required>
+                            <option value="" disabled selected>Select dosage form</option>
+                            <option value="Tablet" {% if medicine and medicine.dosage_form == 'Tablet' %}selected{% endif %}>Tablet</option>
+                            <option value="Capsule" {% if medicine and medicine.dosage_form == 'Capsule' %}selected{% endif %}>Capsule</option>
+                            <option value="Syrup" {% if medicine and medicine.dosage_form == 'Syrup' %}selected{% endif %}>Syrup</option>
+                            <option value="Injection" {% if medicine and medicine.dosage_form == 'Injection' %}selected{% endif %}>Injection</option>
+                            <option value="Ointment" {% if medicine and medicine.dosage_form == 'Ointment' %}selected{% endif %}>Ointment</option>
+                            <option value="Drops" {% if medicine and medicine.dosage_form == 'Drops' %}selected{% endif %}>Drops</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="manufacturer" class="form-label fw-semibold">Manufacturer *</label>
+                        <input type="text" class="form-control rounded-3" id="manufacturer" name="manufacturer" 
+                               value="{{ medicine.manufacturer if medicine else '' }}" required placeholder="e.g. Cipla Ltd">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="min_stock" class="form-label fw-semibold">Minimum Stock Alert Level *</label>
+                        <input type="number" class="form-control rounded-3" id="min_stock" name="min_stock" min="0"
+                               value="{{ medicine.min_stock if medicine else '50' }}" required>
+                        <div class="form-text">Triggers a system warning when total stock falls below this number.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="unit" class="form-label fw-semibold">Unit of Measurement *</label>
+                        <select class="form-select rounded-3" id="unit" name="unit" required>
+                            <option value="" disabled selected>Select packaging unit</option>
+                            <option value="Strip" {% if medicine and medicine.unit == 'Strip' %}selected{% endif %}>Strip</option>
+                            <option value="Bottle" {% if medicine and medicine.unit == 'Bottle' %}selected{% endif %}>Bottle</option>
+                            <option value="Vial" {% if medicine and medicine.unit == 'Vial' %}selected{% endif %}>Vial</option>
+                            <option value="Ampoule" {% if medicine and medicine.unit == 'Ampoule' %}selected{% endif %}>Ampoule</option>
+                            <option value="Tube" {% if medicine and medicine.unit == 'Tube' %}selected{% endif %}>Tube</option>
+                            <option value="Box" {% if medicine and medicine.unit == 'Box' %}selected{% endif %}>Box</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('pharmacy.medicines') }}" class="btn btn-outline-secondary px-4 rounded-pill">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 rounded-pill">
+                        <i class="fa-solid fa-save me-1"></i> Save Medicine
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

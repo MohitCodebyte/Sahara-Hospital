@@ -1,0 +1,47 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Manage Messages - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold" style="color: var(--text-primary);">Contact Messages</h3>
+        <p class="mb-0" style="color: var(--text-muted);">Message Management</p>
+    </div>
+</div>
+
+<div class="glass-table-container">
+    <table class="glass-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Subject</th>
+                <th>Message</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for message in messages %}
+            <tr>
+                <td style="font-weight: 600; color: var(--text-primary);">{{ message.name }}</td>
+                <td style="color: var(--text-secondary);">{{ message.email }}</td>
+                <td style="color: var(--text-secondary);">{{ message.subject or 'No subject' }}</td>
+                <td style="color: var(--text-secondary);">{{ message.message[:50] }}...</td>
+                <td style="color: var(--text-secondary);">{{ message.created_at.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    <a href="{{ url_for('admin.delete_message', message_id=message.id) }}" class="glass-btn-glass glass-btn-sm" style="color: var(--accent-danger);" onclick="return confirm('Are you sure?')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No messages found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

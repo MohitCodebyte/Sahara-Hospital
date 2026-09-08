@@ -1,0 +1,166 @@
+{% extends "staff/layout.html" %}
+
+{% block staff_content %}
+
+<!-- Page Header -->
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h1 class="glass-card-title mb-1">Appointments</h1>
+        <p class="glass-card-subtitle">Manage all patient appointments</p>
+    </div>
+    <div class="col-auto">
+        <div class="glass-search">
+            <i class="fa-solid fa-search" style="position: absolute; left: 14px; color: var(--text-muted);"></i>
+            <input type="text" id="searchInput" placeholder="Search appointments..." onkeyup="filterTable()">
+        </div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="glass-card mb-4">
+    <div class="d-flex gap-2 flex-wrap">
+        <button class="glass-btn glass-btn-primary glass-btn-sm filter-btn active" data-filter="all">
+            All <span class="glass-badge glass-badge-white ms-1">{{ appointments|length }}</span>
+        </button>
+        <button class="glass-btn glass-btn-glass glass-btn-sm filter-btn" data-filter="pending">
+            Pending <span class="glass-badge glass-badge-warning ms-1">{{ appointments|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+        </button>
+        <button class="glass-btn glass-btn-glass glass-btn-sm filter-btn" data-filter="confirmed">
+            Confirmed <span class="glass-badge glass-badge-success ms-1">{{ appointments|selectattr('status', 'equalto', 'confirmed')|list|length }}</span>
+        </button>
+        <button class="glass-btn glass-btn-glass glass-btn-sm filter-btn" data-filter="completed">
+            Completed <span class="glass-badge glass-badge-info ms-1">{{ appointments|selectattr('status', 'equalto', 'completed')|list|length }}</span>
+        </button>
+        <button class="glass-btn glass-btn-glass glass-btn-sm filter-btn" data-filter="cancelled">
+            Cancelled <span class="glass-badge glass-badge-danger ms-1">{{ appointments|selectattr('status', 'equalto', 'cancelled')|list|length }}</span>
+        </button>
+    </div>
+</div>
+
+<!-- Appointments Table -->
+<div class="glass-card">
+    <div class="glass-table-container">
+        <table class="glass-table" id="appointmentsTable">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Department</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in appointments %}
+                <tr class="appointment-row" data-status="{{ appointment.status }}">
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="glass-avatar">{{ appointment.patient.full_name[0] }}</div>
+                            <div>
+                                <div class="fw-600">{{ appointment.patient.full_name }}</div>
+                                <small class="text-muted">{{ appointment.patient.phone }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>Dr. {{ appointment.doctor.name }}</td>
+                    <td>{{ appointment.doctor.department.department_name }}</td>
+                    <td>{{ appointment.appointment_date }}</td>
+                    <td>
+                        {% if appointment.status == 'pending' %}
+                            <span class="glass-badge glass-badge-warning">Pending</span>
+                        {% elif appointment.status == 'confirmed' %}
+                            <span class="glass-badge glass-badge-success">Confirmed</span>
+                        {% elif appointment.status == 'completed' %}
+                            <span class="glass-badge glass-badge-info">Completed</span>
+                        {% elif appointment.status == 'cancelled' %}
+                            <span class="glass-badge glass-badge-danger">Cancelled</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            {% if appointment.status == 'pending' %}
+                                <a href="{{ url_for('opd.approve_appointment', appointment_id=appointment.id) }}" class="glass-btn glass-btn-success glass-btn-sm" title="Approve">
+                                    <i class="fa-solid fa-check"></i>
+                                </a>
+                                <a href="{{ url_for('opd.reject_appointment', appointment_id=appointment.id) }}" class="glass-btn glass-btn-danger glass-btn-sm" title="Reject">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </a>
+                            {% endif %}
+                            <button class="glass-btn glass-btn-glass glass-btn-sm" title="View Details">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <div class="glass-stat-icon glass-stat-icon-info" style="width: 80px; height: 80px; margin: 0 auto 1rem;">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                        <h4 class="glass-card-title">No Appointments Found</h4>
+                        <p class="glass-card-subtitle">There are no appointments to display</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// Filter functionality
+const filterBtns = document.querySelectorAll('.filter-btn');
+const rows = document.querySelectorAll('.appointment-row');
+
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Remove active class from all buttons
+        filterBtns.forEach(b => b.classList.remove('active', 'glass-btn-primary'));
+        filterBtns.forEach(b => b.classList.add('glass-btn-glass'));
+        
+        // Add active class to clicked button
+        btn.classList.add('active', 'glass-btn-primary');
+        btn.classList.remove('glass-btn-glass');
+        
+        const filter = btn.getAttribute('data-filter');
+        
+        rows.forEach(row => {
+            if (filter === 'all' || row.getAttribute('data-status') === filter) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+});
+
+// Search functionality
+function filterTable() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById('appointmentsTable');
+    const rows = table.getElementsByTagName('tr');
+    
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let found = false;
+        
+        for (let j = 0; j < cells.length; j++) {
+            if (cells[j]) {
+                const text = cells[j].textContent || cells[j].innerText;
+                if (text.toLowerCase().indexOf(filter) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        
+        row.style.display = found ? '' : 'none';
+    }
+}
+</script>
+
+{% endblock %}

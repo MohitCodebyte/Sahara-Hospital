@@ -1,0 +1,125 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Manage Patients - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold" style="color: var(--text-primary);">Manage Users</h3>
+        <p class="mb-0" style="color: var(--text-muted);">Patient Management</p>
+    </div>
+</div>
+
+<div class="user-filters">
+    <a href="{{ url_for('admin.list_patients', role='all') }}" class="glass-btn-glass {% if selected_role=='all' %}active{% endif %}" style="flex-direction: column; align-items: center; padding: 1rem; min-width: 100px;">
+        <span style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--text-primary);">{{ patient_count + doctor_count + staff_count + admin_count }}</span>
+        <i class="fas fa-users" style="color: var(--text-muted);"></i>
+        <span style="font-size: 0.875rem; color: var(--text-secondary);">All Users</span>
+    </a>
+
+    <a href="{{ url_for('admin.list_patients', role='patient') }}" class="glass-btn-glass {% if selected_role=='patient' %}active{% endif %}" style="flex-direction: column; align-items: center; padding: 1rem; min-width: 100px;">
+        <span style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--text-primary);">{{ patient_count }}</span>
+        <i class="fas fa-user-injured" style="color: var(--text-muted);"></i>
+        <span style="font-size: 0.875rem; color: var(--text-secondary);">Patients</span>
+    </a>
+
+    <a href="{{ url_for('admin.list_patients', role='doctor') }}" class="glass-btn-glass {% if selected_role=='doctor' %}active{% endif %}" style="flex-direction: column; align-items: center; padding: 1rem; min-width: 100px;">
+        <span style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--text-primary);">{{ doctor_count }}</span>
+        <i class="fas fa-user-doctor" style="color: var(--text-muted);"></i>
+        <span style="font-size: 0.875rem; color: var(--text-secondary);">Doctors</span>
+    </a>
+
+    <a href="{{ url_for('admin.list_patients', role='staff') }}" class="glass-btn-glass {% if selected_role=='staff' %}active{% endif %}" style="flex-direction: column; align-items: center; padding: 1rem; min-width: 100px;">
+        <span style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--text-primary);">{{ staff_count }}</span>
+        <i class="fas fa-user-nurse" style="color: var(--text-muted);"></i>
+        <span style="font-size: 0.875rem; color: var(--text-secondary);">Staff</span>
+    </a>
+
+    <a href="{{ url_for('admin.list_patients', role='admin') }}" class="glass-btn-glass {% if selected_role=='admin' %}active{% endif %}" style="flex-direction: column; align-items: center; padding: 1rem; min-width: 100px;">
+        <span style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--text-primary);">{{ admin_count }}</span>
+        <i class="fas fa-user-shield" style="color: var(--text-muted);"></i>
+        <span style="font-size: 0.875rem; color: var(--text-secondary);">Admins</span>
+    </a>
+</div>
+
+<div class="glass-table-container">
+    <table class="glass-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Gender</th>
+                <th>Age</th>
+                <th>Appointments</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if selected_role == 'admin' %}
+                {% for admin in admins %}
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-primary);">{{ admin.username }}</td>
+                    <td style="color: var(--text-secondary);">{{ admin.email }}</td>
+                    <td style="color: var(--text-muted);">---</td>
+                    <td style="color: var(--text-muted);">---</td>
+                    <td style="color: var(--text-muted);">---</td>
+                    <td style="color: var(--text-muted);">---</td>
+                    <td>
+                        <span class="glass-badge glass-badge-danger">{{ admin.role }}</span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No admins found</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                {% for patient in patients %}
+                <tr>
+                    <td style="font-weight: 600; color: var(--text-primary);">{{ patient.full_name }}</td>
+                    <td style="color: var(--text-secondary);">{{ patient.email }}</td>
+                    <td style="color: var(--text-secondary);">{{ patient.phone }}</td>
+                    <td style="color: var(--text-secondary);">{{ patient.gender }}</td>
+                    <td style="color: var(--text-secondary);">{{ patient.age }}</td>
+                    <td style="color: var(--text-secondary);">{{ patient.appointments|length }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('auth.change_role', user_id=patient.id) }}">
+                            <div class="d-flex align-items-center gap-2">
+                                <select name="role" class="glass-select glass-btn-sm" onchange="this.form.submit()" style="min-width: 160px;">
+                                    <option value="patient" {% if patient.role == 'patient' %}selected{% endif %}>Patient</option>
+                                    <option value="doctor" {% if patient.role == 'doctor' %}selected{% endif %}>Doctor</option>
+                                    <option value="staff" {% if patient.role == 'staff' %}selected{% endif %}>Staff</option>
+                                </select>
+                                <a href="{{ url_for('admin.delete_patient', patient_id=patient.id) }}" class="glass-btn-glass glass-btn-sm" style="color: var(--accent-danger);" onclick="return confirm('Are you sure?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No patients found</td>
+                </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.user-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.glass-btn-glass.active {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: transparent;
+}
+</style>
+{% endblock %}

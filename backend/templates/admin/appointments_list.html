@@ -1,0 +1,57 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Manage Appointments - Sahara Hospital ERP{% endblock %}
+
+{% block admin_content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h3 class="mb-1 fw-bold" style="color: var(--text-primary);">Manage Appointments</h3>
+        <p class="mb-0" style="color: var(--text-muted);">Appointment Management</p>
+    </div>
+</div>
+
+<div class="glass-table-container">
+    <table class="glass-table">
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Date & Time</th>
+                <th>Symptoms</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appointment in appointments %}
+            <tr>
+                <td style="font-weight: 600; color: var(--text-primary);">{{ appointment.patient.full_name }}</td>
+                <td style="color: var(--text-secondary);">{{ appointment.doctor.name }}</td>
+                <td style="color: var(--text-secondary);">{{ appointment.appointment_date.strftime('%Y-%m-%d') }} {{ appointment.appointment_time.strftime('%H:%M') }}</td>
+                <td style="color: var(--text-secondary);">{{ appointment.symptoms[:30] }}...</td>
+                <td>
+                    {% if appointment.status == 'confirmed' %}
+                        <span class="glass-badge glass-badge-success">{{ appointment.status }}</span>
+                    {% elif appointment.status == 'cancelled' %}
+                        <span class="glass-badge glass-badge-danger">{{ appointment.status }}</span>
+                    {% else %}
+                        <span class="glass-badge glass-badge-warning">{{ appointment.status }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('admin.update_appointment_status', appointment_id=appointment.id, status='confirmed') }}" class="glass-btn-glass glass-btn-sm" style="color: var(--accent-success);">Confirm</a>
+                    <a href="{{ url_for('admin.update_appointment_status', appointment_id=appointment.id, status='cancelled') }}" class="glass-btn-glass glass-btn-sm" style="color: var(--accent-danger);">Cancel</a>
+                    <a href="{{ url_for('admin.delete_appointment', appointment_id=appointment.id) }}" class="glass-btn-glass glass-btn-sm" style="color: var(--accent-danger);" onclick="return confirm('Are you sure?')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No appointments found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

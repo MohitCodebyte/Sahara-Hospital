@@ -1,0 +1,262 @@
+{% extends 'admin/layout.html' %}
+{% block title %}Issue Stock{% endblock %}
+{% block admin_content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Issue Stock</h2>
+        <span class="text-muted">{{ today_date }}</span>
+    </div>
+    
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-primary mb-3">
+                    <i class="fa-solid fa-truck-ramp-box"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Total Issues</span>
+                <p class="glass-stat-value" data-counter="{{ issues|length }}" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +12% this month</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-success mb-3">
+                    <i class="fa-solid fa-calendar-day"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Today's Issues</span>
+                <p class="glass-stat-value" data-counter="{{ issues|selectattr('issue_date', 'equalto', today)|list|length if today else 0 }}" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +5% from yesterday</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-warning mb-3">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Pending Issues</span>
+                <p class="glass-stat-value" data-counter="{{ issues|selectattr('status', 'equalto', 'pending')|list|length }}" data-duration="1500">0</p>
+                <p class="glass-stat-change negative"><i class="fa-solid fa-arrow-down"></i> -3% from yesterday</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-info mb-3">
+                    <i class="fa-solid fa-check-circle"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Completed Issues</span>
+                <p class="glass-stat-value" data-counter="{{ issues|selectattr('status', 'equalto', 'completed')|list|length }}" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +8% this week</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Issue Stock Form</h5>
+                    <p class="glass-card-subtitle">Issue inventory to departments</p>
+                </div>
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Department</label>
+                            <select class="form-select" name="department_id" required>
+                                <option value="" disabled selected>Select Department</option>
+                                {% for dept in departments %}
+                                <option value="{{ dept.id }}">{{ dept.department_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Item</label>
+                            <select class="form-select" name="item_id" id="item-select" required>
+                                <option value="" disabled selected>Select Item</option>
+                                {% for item in items %}
+                                <option value="{{ item.id }}" data-qty="{{ item.quantity }}">{{ item.item_name }} (Available: {{ item.quantity }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Available Stock</label>
+                            <input type="text" class="form-control" id="available-stock" readonly value="0">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Quantity to Issue</label>
+                            <input type="number" class="form-control" name="quantity" id="quantity-input" min="1" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Issue Date</label>
+                            <input type="date" class="form-control" name="issue_date" value="{{ today.strftime('%Y-%m-%d') if today else '' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Issued By</label>
+                            <input type="text" class="form-control" name="issued_by" placeholder="Staff name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" required>
+                                <option value="pending" selected>Pending</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea class="form-control" name="remarks" rows="2" placeholder="Optional remarks"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="glass-btn glass-btn-primary">
+                                <i class="fa-solid fa-paper-plane me-2"></i>Issue Stock
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Live Stock Preview</h5>
+                    <p class="glass-card-subtitle">Selected item details</p>
+                </div>
+                <div class="p-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; background: rgba(37, 99, 235, 0.1); color: #2563EB;">
+                            <i class="fa-solid fa-box"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted text-sm">Selected Item</div>
+                            <div class="fw-bold" id="selected-item-name">-</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; background: rgba(34, 197, 94, 0.1); color: #22C55E;">
+                            <i class="fa-solid fa-warehouse"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted text-sm">Available Quantity</div>
+                            <div class="fw-bold text-success" id="preview-qty">0</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; background: rgba(245, 158, 11, 0.1); color: #F59E0B;">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted text-sm">Quantity to Issue</div>
+                            <div class="fw-bold text-warning" id="preview-issue-qty">0</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; background: rgba(239, 68, 68, 0.1); color: #EF4444;">
+                            <i class="fa-solid fa-balance-scale"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted text-sm">Remaining After Issue</div>
+                            <div class="fw-bold text-danger" id="preview-remaining">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="glass-card">
+        <div class="glass-card-header">
+            <h5 class="glass-card-title">Recent Issues</h5>
+            <p class="glass-card-subtitle">Latest stock issue transactions</p>
+        </div>
+        <div class="glass-table-container">
+            <table class="glass-table">
+                <thead>
+                    <tr>
+                        <th>Issue ID</th>
+                        <th>Department</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Issue Date</th>
+                        <th>Issued By</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if issues %}
+                        {% for issue in issues %}
+                        <tr>
+                            <td><strong>{{ issue.id }}</strong></td>
+                            <td>{{ issue.department.department_name if issue.department else 'N/A' }}</td>
+                            <td>{{ issue.item.item_name if issue.item else 'N/A' }}</td>
+                            <td>{{ issue.quantity }}</td>
+                            <td>{{ issue.issue_date.strftime('%Y-%m-%d') if issue.issue_date else 'N/A' }}</td>
+                            <td>{{ issue.issued_by }}</td>
+                            <td>
+                                {% if issue.status == 'completed' %}
+                                    <span class="glass-badge glass-badge-success">Completed</span>
+                                {% elif issue.status == 'pending' %}
+                                    <span class="glass-badge glass-badge-warning">Pending</span>
+                                {% else %}
+                                    <span class="glass-badge glass-badge-danger">{{ issue.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ issue.remarks or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="fa-solid fa-truck-ramp-box fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">No stock issues found.</p>
+                                <small class="text-muted">Issue stock to departments to track inventory movement.</small>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemSelect = document.getElementById('item-select');
+    const availableStockInput = document.getElementById('available-stock');
+    const quantityInput = document.getElementById('quantity-input');
+    const selectedItemName = document.getElementById('selected-item-name');
+    const previewQty = document.getElementById('preview-qty');
+    const previewIssueQty = document.getElementById('preview-issue-qty');
+    const previewRemaining = document.getElementById('preview-remaining');
+    
+    function updatePreview() {
+        const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+        const availableQty = parseInt(selectedOption.getAttribute('data-qty')) || 0;
+        const issueQty = parseInt(quantityInput.value) || 0;
+        const itemName = selectedOption.text.split(' (Available:')[0] || '-';
+        
+        availableStockInput.value = availableQty;
+        selectedItemName.textContent = itemName;
+        previewQty.textContent = availableQty;
+        previewIssueQty.textContent = issueQty;
+        previewRemaining.textContent = availableQty - issueQty;
+        
+        if (issueQty > availableQty) {
+            previewRemaining.classList.add('text-danger');
+            previewRemaining.classList.remove('text-success');
+            quantityInput.classList.add('is-invalid');
+        } else {
+            previewRemaining.classList.remove('text-danger');
+            previewRemaining.classList.add('text-success');
+            quantityInput.classList.remove('is-invalid');
+        }
+    }
+    
+    itemSelect.addEventListener('change', updatePreview);
+    quantityInput.addEventListener('input', updatePreview);
+});
+</script>
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard-utils.js') }}"></script>
+{% endblock %}
+{% endblock %}

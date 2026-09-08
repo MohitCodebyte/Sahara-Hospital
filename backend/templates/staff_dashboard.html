@@ -1,0 +1,209 @@
+{% extends "staff/layout.html" %}
+
+{% block title %}
+Staff Dashboard - Sahara Hospital
+{% endblock %}
+
+{% block staff_content %}
+
+<!-- Welcome Section -->
+<div class="glass-card mb-4">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <h1 class="glass-card-title mb-2">Welcome back, {{ session.get('patient_name', 'Staff') }}</h1>
+            <p class="glass-card-subtitle">Here's what's happening at Sahara Hospital today.</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <div class="glass-stat-icon glass-stat-icon-info" style="width: 60px; height: 60px; margin: 0 auto; display: inline-flex;">
+                <i class="fa-solid fa-calendar-day"></i>
+            </div>
+            <div class="mt-2">
+                <span class="glass-badge glass-badge-primary" id="currentDate"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-stat-card">
+            <div class="glass-stat-icon glass-stat-icon-primary">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="glass-stat-value" data-count="0">0</div>
+            <div class="glass-stat-label">Total Patients</div>
+            <a href="{{ url_for('opd.staff_panel') }}" class="glass-btn glass-btn-outline glass-btn-sm mt-3">
+                View All <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-stat-card">
+            <div class="glass-stat-icon glass-stat-icon-success">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div class="glass-stat-value" data-count="{{ pending_appointments|length }}">{{ pending_appointments|length }}</div>
+            <div class="glass-stat-label">Pending Appointments</div>
+            <a href="{{ url_for('staff.staff_appointments') }}" class="glass-btn glass-btn-outline glass-btn-sm mt-3">
+                View All <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-stat-card">
+            <div class="glass-stat-icon glass-stat-icon-warning">
+                <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+            <div class="glass-stat-value" data-count="0">0</div>
+            <div class="glass-stat-label">OPD Queue</div>
+            <a href="{{ url_for('opd.reception') }}" class="glass-btn glass-btn-outline glass-btn-sm mt-3">
+                View Queue <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="glass-stat-card">
+            <div class="glass-stat-icon glass-stat-icon-danger">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+            <div class="glass-stat-value" data-count="0">0</div>
+            <div class="glass-stat-label">Billing Today</div>
+            <a href="{{ url_for('opd.fees') }}" class="glass-btn glass-btn-outline glass-btn-sm mt-3">
+                View Billing <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Appointments -->
+<div class="glass-card mb-4">
+    <div class="glass-card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="glass-card-title mb-1">Pending Appointments</h3>
+                <p class="glass-card-subtitle">Review and manage appointment requests</p>
+            </div>
+            <a href="{{ url_for('staff.staff_appointments') }}" class="glass-btn glass-btn-primary glass-btn-sm">
+                View All <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+    {% if pending_appointments %}
+    <div class="glass-table-container">
+        <table class="glass-table">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in pending_appointments %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="glass-avatar">{{ appointment.patient.full_name[0] }}</div>
+                            <span>{{ appointment.patient.full_name }}</span>
+                        </div>
+                    </td>
+                    <td>Dr. {{ appointment.doctor.name }}</td>
+                    <td>{{ appointment.appointment_date }}</td>
+                    <td><span class="glass-badge glass-badge-warning">Pending</span></td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('opd.approve_appointment', appointment_id=appointment.id) }}" class="glass-btn glass-btn-success glass-btn-sm">
+                                <i class="fa-solid fa-check"></i>
+                            </a>
+                            <a href="{{ url_for('opd.reject_appointment', appointment_id=appointment.id) }}" class="glass-btn glass-btn-danger glass-btn-sm">
+                                <i class="fa-solid fa-xmark"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="glass-stat-icon glass-stat-icon-info" style="width: 80px; height: 80px; margin: 0 auto 1rem;">
+            <i class="fa-solid fa-calendar-check"></i>
+        </div>
+        <h4 class="glass-card-title">No Pending Appointments</h4>
+        <p class="glass-card-subtitle">All appointment requests have been processed</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="glass-card">
+    <div class="glass-card-header">
+        <h3 class="glass-card-title mb-1">Quick Actions</h3>
+        <p class="glass-card-subtitle">Frequently used tasks</p>
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ url_for('opd.staff_panel') }}" class="glass-btn glass-btn-glass w-100 text-start">
+                <i class="fa-solid fa-user-plus me-2"></i>
+                Register Patient
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ url_for('opd.reception') }}" class="glass-btn glass-btn-glass w-100 text-start">
+                <i class="fa-solid fa-ticket me-2"></i>
+                Generate Token
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ url_for('opd.fees') }}" class="glass-btn glass-btn-glass w-100 text-start">
+                <i class="fa-solid fa-receipt me-2"></i>
+                Create Invoice
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ url_for('staff.staff_dashboard') }}" class="glass-btn glass-btn-glass w-100 text-start">
+                <i class="fa-solid fa-chart-line me-2"></i>
+                View Reports
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set current date
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+});
+
+// Counter animation
+const counters = document.querySelectorAll('.glass-stat-value');
+const speed = 200;
+
+counters.forEach(counter => {
+    const target = +counter.getAttribute('data-count');
+    if (target === 0) return;
+    
+    const updateCount = () => {
+        const count = +counter.innerText;
+        const inc = target / speed;
+        
+        if (count < target) {
+            counter.innerText = Math.ceil(count + inc);
+            setTimeout(updateCount, 10);
+        } else {
+            counter.innerText = target;
+        }
+    };
+    
+    updateCount();
+});
+</script>
+
+{% endblock %}

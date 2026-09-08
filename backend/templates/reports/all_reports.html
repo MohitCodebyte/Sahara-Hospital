@@ -1,0 +1,125 @@
+{% extends 'admin/layout.html' %}
+{% block title %}Reports{% endblock %}
+{% block admin_content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Reports</h2>
+    
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <h5 class="card-title">Total Reports</h5>
+                <p class="display-6 text-primary">0</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <h5 class="card-title">This Month</h5>
+                <p class="display-6 text-success">0</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <h5 class="card-title">Pending</h5>
+                <p class="display-6 text-warning">0</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <h5 class="card-title">Completed</h5>
+                <p class="display-6 text-info">0</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="glass-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="mb-0">Generated Reports</h5>
+            <button class="btn btn-primary">
+                <i class="fa-solid fa-plus me-2"></i>Generate New Report
+            </button>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Report Name</th>
+                        <th>Type</th>
+                        <th>Generated Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <i class="fa-solid fa-file-medical fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No reports generated yet.</p>
+                            <small class="text-muted">Generate your first report to get started.</small>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="row g-4 mt-4">
+        <div class="col-md-4">
+            <div class="glass-card">
+                <h6 class="mb-3">Quick Reports</h6>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary text-start">
+                        <i class="fa-solid fa-chart-line me-2"></i>Daily Revenue Report
+                    </button>
+                    <button class="btn btn-outline-primary text-start">
+                        <i class="fa-solid fa-users me-2"></i>Patient Statistics
+                    </button>
+                    <button class="btn btn-outline-primary text-start">
+                        <i class="fa-solid fa-boxes-stacked me-2"></i>Inventory Summary
+                    </button>
+                    <button class="btn btn-outline-primary text-start">
+                        <i class="fa-solid fa-user-doctor me-2"></i>Doctor Performance
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="glass-card">
+                <h6 class="mb-3">Department Reports</h6>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-secondary text-start">
+                        <i class="fa-solid fa-heart-pulse me-2"></i>OPD Statistics
+                    </button>
+                    <button class="btn btn-outline-secondary text-start">
+                        <i class="fa-solid fa-pills me-2"></i>Pharmacy Reports
+                    </button>
+                    <button class="btn btn-outline-secondary text-start">
+                        <i class="fa-solid fa-microscope me-2"></i>Laboratory Reports
+                    </button>
+                    <button class="btn btn-outline-secondary text-start">
+                        <i class="fa-solid fa-file-invoice-dollar me-2"></i>Billing Reports
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="glass-card">
+                <h6 class="mb-3">Custom Reports</h6>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-success text-start">
+                        <i class="fa-solid fa-calendar me-2"></i>Date Range Report
+                    </button>
+                    <button class="btn btn-outline-success text-start">
+                        <i class="fa-solid fa-filter me-2"></i>Custom Filter Report
+                    </button>
+                    <button class="btn btn-outline-success text-start">
+                        <i class="fa-solid fa-download me-2"></i>Export All Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

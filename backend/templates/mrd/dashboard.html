@@ -1,0 +1,536 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}
+Medical Records Dashboard - Sahara Hospital ERP
+{% endblock %}
+
+{% block admin_content %}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">Medical Records Department</h2>
+            <p class="text-muted mb-0">Patient records, reports, prescriptions and visit history</p>
+        </div>
+        <a href="{{ url_for('mrd.patients') }}" class="glass-btn glass-btn-primary">
+            <i class="fa-solid fa-users"></i> Patient Records
+        </a>
+    </div>
+
+    <!-- KPI Cards with Animated Counters -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-primary mb-3">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Registered Patients</span>
+                <p class="glass-stat-value" data-counter="{{ stats.patients if stats else 0 }}" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +125 this month</p>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-success mb-3">
+                    <i class="fa-solid fa-clipboard-user"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Active Records</span>
+                <p class="glass-stat-value" data-counter="{{ stats.active_records if stats else 0 }}" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +8% this week</p>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-info mb-3">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Today's Registrations</span>
+                <p class="glass-stat-value" data-counter="{{ stats.today_registrations if stats else 0 }}" data-duration="1000">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +12 new today</p>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-warning mb-3">
+                    <i class="fa-solid fa-file-medical"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Medical Reports</span>
+                <p class="glass-stat-value" data-counter="{{ stats.reports if stats else 0 }}" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +10% this month</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row KPIs -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-danger mb-3">
+                    <i class="fa-solid fa-stethoscope"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">OPD Visits</span>
+                <p class="glass-stat-value" data-counter="{{ stats.opd_visits if stats else 0 }}" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +15% this week</p>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-primary mb-3">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Follow-ups</span>
+                <p class="glass-stat-value" data-counter="{{ stats.followups if stats else 0 }}" data-duration="1500">0</p>
+                <p class="glass-stat-change negative"><i class="fa-solid fa-arrow-down"></i> -3% from last week</p>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-info mb-3">
+                    <i class="fa-solid fa-prescription"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Prescriptions</span>
+                <p class="glass-stat-value" data-counter="{{ stats.prescriptions if stats else 0 }}" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +8% this month</p>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="glass-card">
+                <div class="glass-stat-icon glass-stat-icon-success mb-3">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <span class="d-block text-muted text-sm font-semibold mb-1">Appointments</span>
+                <p class="glass-stat-value" data-counter="{{ stats.appointments if stats else 0 }}" data-duration="1500">0</p>
+                <p class="glass-stat-change positive"><i class="fa-solid fa-arrow-up"></i> +12% this month</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Patient Growth</h5>
+                    <p class="glass-card-subtitle">Last 30 days</p>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="patientGrowthChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Gender Distribution</h5>
+                    <p class="glass-card-subtitle">Male vs Female ratio</p>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="genderChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Charts Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">OPD vs Follow-Up</h5>
+                    <p class="glass-card-subtitle">Visit type comparison</p>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="opdFollowupChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Appointments Trend</h5>
+                    <p class="glass-card-subtitle">Monthly appointment trend</p>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="appointmentsTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Timeline and Quick Actions -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Recent Activity</h5>
+                    <p class="glass-card-subtitle">Latest MRD operations</p>
+                </div>
+                <div class="activity-timeline">
+                    <div class="activity-item">
+                        <div class="activity-indicator activity-indicator-success">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Patient Registered</div>
+                            <div class="activity-time">2 minutes ago</div>
+                            <div class="activity-desc">New patient John Doe registered</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-indicator activity-indicator-info">
+                            <i class="fa-solid fa-file-medical"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Report Generated</div>
+                            <div class="activity-time">15 minutes ago</div>
+                            <div class="activity-desc">Lab report generated for patient #1234</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-indicator activity-indicator-warning">
+                            <i class="fa-solid fa-prescription"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Prescription Added</div>
+                            <div class="activity-time">1 hour ago</div>
+                            <div class="activity-desc">Dr. Smith added prescription for patient #5678</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-indicator activity-indicator-primary">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Follow-up Scheduled</div>
+                            <div class="activity-time">2 hours ago</div>
+                            <div class="activity-desc">Follow-up scheduled for patient #9012</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-indicator activity-indicator-success">
+                            <i class="fa-solid fa-check-circle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Appointment Completed</div>
+                            <div class="activity-time">3 hours ago</div>
+                            <div class="activity-desc">OPD appointment completed with Dr. Johnson</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="glass-card h-100">
+                <div class="glass-card-header">
+                    <h5 class="glass-card-title">Quick Actions</h5>
+                    <p class="glass-card-subtitle">Frequently used operations</p>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="#" class="glass-btn glass-btn-primary text-start">
+                        <i class="fa-solid fa-user-plus me-2"></i> New Patient
+                    </a>
+                    <a href="#" class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-folder-plus me-2"></i> Create MRD
+                    </a>
+                    <a href="#" class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-upload me-2"></i> Upload Report
+                    </a>
+                    <a href="#" class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-prescription me-2"></i> Add Prescription
+                    </a>
+                    <a href="#" class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-calendar-check me-2"></i> Schedule Follow-Up
+                    </a>
+                    <a href="{{ url_for('mrd.patients') }}" class="glass-btn glass-btn-glass text-start">
+                        <i class="fa-solid fa-folder-open me-2"></i> View Records
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Patients Table -->
+    <div class="glass-card">
+        <div class="glass-card-header">
+            <h5 class="glass-card-title">Recent Patient Registrations</h5>
+            <a href="{{ url_for('mrd.patients') }}" class="glass-btn glass-btn-sm glass-btn-outline">View All</a>
+        </div>
+        <div class="glass-table-container">
+            <table class="glass-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Gender</th>
+                        <th>Age</th>
+                        <th>Registration Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if recent_patients %}
+                        {% for patient in recent_patients %}
+                        <tr>
+                            <td class="fw-bold">{{ patient.id }}</td>
+                            <td>{{ patient.full_name }}</td>
+                            <td>{{ patient.phone }}</td>
+                            <td>{{ patient.gender }}</td>
+                            <td>{{ patient.age }}</td>
+                            <td>{{ patient.created_at.strftime('%Y-%m-%d') if patient.created_at else '-' }}</td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <button class="glass-btn glass-btn-sm glass-btn-glass" title="View Profile">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button class="glass-btn glass-btn-sm glass-btn-glass" title="View Records">
+                                        <i class="fa-solid fa-folder-open"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="fa-solid fa-users fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">No recent patient registrations</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.activity-timeline {
+    padding: 1rem 0;
+}
+
+.activity-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #E5E7EB;
+    transition: transform 0.2s ease;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item:hover {
+    transform: translateX(5px);
+}
+
+.activity-indicator {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+}
+
+.activity-indicator-success {
+    background: #22C55E;
+}
+
+.activity-indicator-info {
+    background: #3B82F6;
+}
+
+.activity-indicator-warning {
+    background: #F59E0B;
+}
+
+.activity-indicator-primary {
+    background: #2563EB;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: #0F172A;
+    margin-bottom: 0.25rem;
+}
+
+.activity-time {
+    font-size: 0.875rem;
+    color: #64748B;
+    margin-bottom: 0.25rem;
+}
+
+.activity-desc {
+    font-size: 0.875rem;
+    color: #64748B;
+}
+</style>
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard-utils.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Patient Growth Chart
+    const patientGrowthCtx = document.getElementById('patientGrowthChart');
+    if (patientGrowthCtx) {
+        new Chart(patientGrowthCtx, {
+            type: 'line',
+            data: {
+                labels: ['Day 1', 'Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30'],
+                datasets: [{
+                    label: 'New Patients',
+                    data: [12, 19, 15, 25, 22, 30, 35],
+                    borderColor: '#22C55E',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#E5E7EB'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+
+    // OPD vs Follow-Up Chart
+    const opdFollowupCtx = document.getElementById('opdFollowupChart');
+    if (opdFollowupCtx) {
+        new Chart(opdFollowupCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'OPD Visits',
+                    data: [45, 52, 38, 65, 58, 42, 30],
+                    backgroundColor: '#2563EB',
+                    borderRadius: 4
+                }, {
+                    label: 'Follow-ups',
+                    data: [25, 30, 22, 35, 32, 25, 18],
+                    backgroundColor: '#F59E0B',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#E5E7EB'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+
+    // Appointments Trend Chart
+    const appointmentsTrendCtx = document.getElementById('appointmentsTrendChart');
+    if (appointmentsTrendCtx) {
+        new Chart(appointmentsTrendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Appointments',
+                    data: [150, 200, 180, 250, 220, 300],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#E5E7EB'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

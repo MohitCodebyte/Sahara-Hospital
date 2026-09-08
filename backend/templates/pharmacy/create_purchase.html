@@ -1,0 +1,48 @@
+{% extends 'admin/layout.html' %}
+{% block content %}
+<h2>Create Purchase</h2>
+<form method="post">
+  <div class="form-group">
+    <label for="supplier_id">Supplier</label>
+    <select name="supplier_id" id="supplier_id" class="form-control" required>
+      {% for s in suppliers %}
+        <option value="{{ s.id }}">{{ s.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Medicine Batches</label>
+    <div id="batch-container">
+      <div class="batch-row">
+        <select name="medicine_id" class="form-control" required>
+          {% for m in medicines %}
+            <option value="{{ m.id }}">{{ m.medicine_name }}</option>
+          {% endfor %}
+        </select>
+        <input type="number" name="quantity" class="form-control" placeholder="Qty" min="1" required>
+        <input type="number" step="0.01" name="rate" class="form-control" placeholder="Rate" required>
+        <input type="date" name="expiry_date" class="form-control" required>
+      </div>
+    </div>
+    <button type="button" class="btn btn-secondary" onclick="addBatchRow()">Add Row</button>
+  </div>
+  <button type="submit" class="btn btn-primary">Save Purchase</button>
+</form>
+<script>
+function addBatchRow(){
+  const container=document.getElementById('batch-container');
+  const row=document.createElement('div');
+  row.className='batch-row';
+  row.innerHTML=`
+    <select name="medicine_id" class="form-control" required>
+      {% for m in medicines %}
+        <option value="{{ m.id }}">{{ m.medicine_name }}</option>
+      {% endfor %}
+    </select>
+    <input type="number" name="quantity" class="form-control" placeholder="Qty" min="1" required>
+    <input type="number" step="0.01" name="rate" class="form-control" placeholder="Rate" required>
+    <input type="date" name="expiry_date" class="form-control" required>`;
+  container.appendChild(row);
+}
+</script>
+{% endblock %}

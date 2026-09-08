@@ -1,0 +1,148 @@
+{% extends "staff/layout.html" %}
+
+{% block title %}Staff OPD Panel - Sahara Hospital{% endblock %}
+
+{% block staff_content %}
+<!-- Page Header -->
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h1 class="glass-card-title mb-1">Patient Management</h1>
+        <p class="glass-card-subtitle">Search and manage patient records by token number</p>
+    </div>
+</div>
+
+<!-- Search Card -->
+<div class="glass-card mb-4">
+    <div class="glass-card-header">
+        <h3 class="glass-card-title mb-1">Search Patient</h3>
+        <p class="glass-card-subtitle">Enter OPD token number to find patient</p>
+    </div>
+    <form method="POST" action="{{ url_for('opd.search_by_token') }}">
+        <div class="row g-3">
+            <div class="col-md-8">
+                <div class="glass-input-group">
+                    <i class="fa-solid fa-ticket input-icon"></i>
+                    <input type="text" name="token_number" class="glass-input" 
+                           placeholder="Enter OPD Token Number (e.g., OPD-101)" required>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="glass-btn glass-btn-primary w-100">
+                    <i class="fa-solid fa-search me-2"></i>Search Patient
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if patient %}
+<!-- Patient Details Card -->
+<div class="glass-card mb-4">
+    <div class="glass-card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="glass-card-title mb-1">Patient Details</h3>
+                <p class="glass-card-subtitle">Token: {{ patient.token_number }}</p>
+            </div>
+            <div>
+                {% if patient.status == 'waiting' %}
+                    <span class="glass-badge glass-badge-warning">Waiting</span>
+                {% elif patient.status == 'in_progress' %}
+                    <span class="glass-badge glass-badge-info">In Progress</span>
+                {% elif patient.status == 'completed' %}
+                    <span class="glass-badge glass-badge-success">Completed</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <form method="POST" action="{{ url_for('opd.update_patient_details', visit_id=patient.visit_id if patient.visit_id else patient.id) }}">
+        <input type="hidden" name="visit_id" value="{{ patient.visit_id if patient.visit_id else patient.id }}">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="glass-label">Patient Name</label>
+                <input type="text" name="full_name" class="glass-input" value="{{ patient.patient.full_name }}">
+            </div>
+            <div class="col-md-6">
+                <label class="glass-label">Phone Number</label>
+                <input type="text" name="phone" class="glass-input" value="{{ patient.patient.phone }}">
+            </div>
+            <div class="col-md-4">
+                <label class="glass-label">Gender</label>
+                <select name="gender" class="glass-select">
+                    <option value="Male" {% if patient.patient.gender == 'Male' %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if patient.patient.gender == 'Female' %}selected{% endif %}>Female</option>
+                    <option value="Other" {% if patient.patient.gender == 'Other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="glass-label">Age</label>
+                <input type="number" name="age" class="glass-input" value="{{ patient.patient.age }}">
+            </div>
+            <div class="col-md-4">
+                <label class="glass-label">Check-in Time</label>
+                <input type="text" class="glass-input" value="{{ patient.check_in_time.strftime('%H:%M:%S') if patient.check_in_time else '-' }}" readonly>
+            </div>
+            <div class="col-md-6">
+                <label class="glass-label">Department</label>
+                <select name="department_id" class="glass-select">
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}"
+                        {% if patient.doctor and patient.doctor.department and patient.doctor.department.id == dept.id %}
+                            selected
+                        {% endif %}>
+                        {{ dept.department_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="glass-label">Symptoms / Chief Complaint</label>
+                <textarea name="symptoms" class="glass-textarea" rows="3">{{ patient.chief_complaint }}</textarea>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="glass-btn glass-btn-primary">
+                    <i class="fa-solid fa-save me-2"></i>Update Patient Details
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Staff Actions Card -->
+<div class="glass-card">
+    <div class="glass-card-header">
+        <h3 class="glass-card-title mb-1">Staff Actions</h3>
+        <p class="glass-card-subtitle">Quick actions for this patient</p>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="glass-label">Update Status</label>
+            <form method="POST" action="{{ url_for('opd.update_status', visit_id=patient.id) }}">
+                <div class="d-flex gap-2">
+                    <select name="status" class="glass-select">
+                        <option value="waiting" {% if patient.status == 'waiting' %}selected{% endif %}>Waiting</option>
+                        <option value="in_progress" {% if patient.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if patient.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                    <button type="submit" class="glass-btn glass-btn-success">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <label class="glass-label">Print Documents</label>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('opd.generate_opd_slip', visit_id=patient.id) }}" class="glass-btn glass-btn-outline flex-fill">
+                    <i class="fa-solid fa-print me-2"></i>OPD Slip
+                </a>
+                <button class="glass-btn glass-btn-glass flex-fill" disabled title="Coming Soon">
+                    <i class="fa-solid fa-file-prescription me-2"></i>Prescription
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
