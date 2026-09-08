@@ -288,6 +288,11 @@ class ModelMeta(type):
         return ColumnProxy(name)
 
 
+class QueryDescriptor:
+    def __get__(self, instance, owner):
+        return ModelQuery(owner)
+
+
 class BaseModel(metaclass=ModelMeta):
     id = ColumnProxy('id')
 
@@ -302,10 +307,7 @@ class BaseModel(metaclass=ModelMeta):
         if getattr(self, 'created_at', None) is None:
             self.created_at = datetime.utcnow()
 
-    @classmethod
-    @property
-    def query(cls):
-        return ModelQuery(cls)
+    query = QueryDescriptor()
 
 
 # ==============================================================================
