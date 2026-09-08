@@ -31,10 +31,10 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     app.secret_key = app.config['SECRET_KEY']
-    
+
     # Initialize in-memory datastore interface
     db.init_app(app)
-    
+
     # Register blueprints
     app.register_blueprint(home_bp)
     app.register_blueprint(doctors_bp)
@@ -57,11 +57,14 @@ def create_app():
     app.register_blueprint(pharmacy_bp)
     app.register_blueprint(laboratory_bp)
     app.register_blueprint(financial_analytics_bp)
-    
+
     return app
 
 
+# Create the Flask application for Gunicorn / production
+app = create_app()
+
+
 if __name__ == '__main__':
-    app = create_app()
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True, host='0.0.0.0', port=port)
